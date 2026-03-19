@@ -1,0 +1,447 @@
+/* ===========================
+   RESET & BASE
+=========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ===========================
+   VARIÁVEIS DE TEMA
+=========================== */
+:root {
+    --bg-color: #F2F9FE;
+    --text-color: #223344;
+    --text-muted: #5a6a7e;
+    --main-blue: #2A4DD0;
+    --nav-bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --shadow: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] {
+    --bg-color: #111729;
+    --text-color: #FFFFFF;
+    --text-muted: #a0aec0;
+    --main-blue: #6b8cff;
+    --nav-bg: #1a2340;
+    --card-bg: #1e2d4a;
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================
+   BODY
+=========================== */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.4s ease, color 0.4s ease;
+    min-height: 100vh;
+}
+
+/* ===========================
+   OVERLAY (mobile menu)
+=========================== */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 900;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* ===========================
+   HEADER
+=========================== */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 70px;
+}
+
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* Nav */
+nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    gap: 50px;
+    align-items: center;
+}
+
+.nav-item a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 15px;
+    transition: color 0.2s;
+}
+
+.nav-item a:hover {
+    color: var(--main-blue);
+}
+
+.nav-item.active a {
+    color: var(--main-blue);
+    border-bottom: 2.5px solid var(--main-blue);
+    padding-bottom: 2px;
+}
+
+/* Itens só para mobile — escondidos no desktop */
+.nav-close-item,
+.mobile-switch-item {
+    display: none;
+}
+
+/* Lado direito do header */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+/* ===========================
+   TOGGLE DE TEMA (SWITCH)
+=========================== */
+.switch {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.switch input[type="checkbox"] {
+    display: none;
+}
+
+.slider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 5px;
+    width: 60px;
+    height: 30px;
+    background-color: #223344;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.ball {
+    position: absolute;
+    left: 4px;
+    width: 22px;
+    height: 22px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1;
+}
+
+/* Move a bolinha quando marcado */
+input[type="checkbox"]:checked + .slider .ball {
+    transform: translateX(30px);
+}
+
+.icon-moon,
+.icon-sun {
+    font-size: 13px;
+    z-index: 2;
+    line-height: 1;
+}
+
+/* ===========================
+   HAMBURGER
+=========================== */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1100;
+}
+
+
+.bar {
+    display: block;
+    width: 26px;
+    height: 2.5px;
+    background-color: var(--text-color);
+    border-radius: 2px;
+    transition: background-color 0.3s;
+}
+
+/* Botão fechar dentro do menu */
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text-color);
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+/* ===========================
+   MAIN / HERO
+=========================== */
+main {
+    padding: 20px 70px 60px;
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    min-height: calc(100vh - 120px);
+}
+
+/* Lado esquerdo */
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 580px;
+}
+
+.badge {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+
+h1 {
+    font-size: 58px;
+    font-weight: 800;
+    color: var(--text-color);
+    line-height: 1.1;
+}
+
+.description {
+    font-size: 17px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* Botões */
+.links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.btn-primary {
+    background-color: #2A4DD0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background-color 0.3s, transform 0.15s;
+}
+
+.btn-primary:hover {
+    background-color: #1f3ba8;
+    transform: translateY(-1px);
+}
+
+.btn-link {
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--main-blue);
+    border-bottom: 2.5px solid var(--main-blue);
+    padding-bottom: 2px;
+    transition: opacity 0.2s;
+}
+
+.btn-link:hover {
+    opacity: 0.75;
+}
+
+/* Features */
+.features {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.check-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+
+/* ===========================
+   RESPONSIVE — MOBILE
+=========================== */
+@media (max-width: 768px) {
+
+    /* Header compacto */
+    header {
+        padding: 16px 20px;
+        position: relative;
+        z-index: 1002;
+    }
+
+    /* Nav vira painel lateral */
+    nav {
+        justify-content: flex-start;
+    }
+
+    .nav-list {
+        display: none; /* escondido por padrão */
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 65%;
+        height: 100vh;
+        background-color: var(--nav-bg);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 36px;
+        z-index: 1050;
+        box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
+        padding: 40px 20px;
+        transition: none;
+    }
+
+    /* Quando ativo, aparece */
+    .nav-list.active {
+        display: flex;
+    }
+
+    /* Links maiores no mobile */
+    .nav-item a {
+        font-size: 20px;
+        color: var(--text-muted);
+    }
+
+    .nav-item.active a {
+        color: var(--main-blue);
+    }
+
+    /* Mostra os itens mobile-only */
+    .nav-close-item {
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+
+    .mobile-switch-item {
+        display: flex;
+        margin-top: 10px;
+    }
+
+    /* Esconde toggle desktop no mobile */
+    #desktop-switch {
+        display: none;
+    }
+
+    /* Mostra hamburger */
+    .hamburger {
+        display: flex;
+    }
+
+    .hamburger.active {
+        display: none;
+    }
+
+    /* Hero empilhado */
+    .hero {
+        flex-direction: column-reverse;
+        align-items: center;
+        text-align: center;
+        min-height: auto;
+        gap: 30px;
+        padding-top: 20px;
+    }
+
+    .hero-content {
+        align-items: center;
+        max-width: 100%;
+    }
+
+    h1 {
+        font-size: 34px;
+    }
+
+    main {
+        padding: 10px 20px 40px;
+    }
+
+    .hero-illustration {
+        width: 300px;
+        height: 300px;
+    }
+
+    .circle-bg {
+        width: 260px;
+        height: 260px;
+    }
+
+    .card-top {
+        top: 20px;
+        left: -5px;
+    }
+
+    .card-bottom {
+        bottom: 20px;
+        right: -5px;
+    }
+
+    .features {
+        justify-content: center;
+    }
+}

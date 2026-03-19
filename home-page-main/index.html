@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <title>Alarado</title>
+</head>
+<body>
+
+    <!-- Overlay para fechar o menu ao clicar fora -->
+    <div class="overlay" id="overlay"></div>
+
+    <header>
+
+        <!-- Logo -->
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="8" width="14" height="14" rx="3" fill="#2A4DD0"/>
+                <rect x="10" y="2" width="14" height="14" rx="3" fill="#4CAF50" opacity="0.85"/>
+            </svg>
+            <span class="logo-text">Alarado</span>
+        </div>
+
+        <!-- Nav (desktop) -->
+        <nav>
+            <ul class="nav-list" id="nav-list">
+
+                <!-- Botão fechar (só visível no mobile) -->
+                <li class="nav-close-item">
+                    <button class="btn-close" id="btn-close" aria-label="Fechar menu">&#10005;</button>
+                </li>
+
+                <li class="nav-item active"><a href="#">Sobre nós</a></li>
+                <li class="nav-item"><a href="#">Produto</a></li>
+                <li class="nav-item"><a href="#">Recurso</a></li>
+                <li class="nav-item"><a href="#">Contato</a></li>
+
+                <!-- Toggle visível dentro do menu no mobile -->
+                <li class="mobile-switch-item">
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle-mobile">
+                        <span class="slider">
+                            <span class="icon-moon">🌙</span>
+                            <span class="icon-sun">☀️</span>
+                            <span class="ball"></span>
+                        </span>
+                    </label>
+                </li>
+
+            </ul>
+        </nav>
+
+        <!-- Toggle de tema (desktop) + Hamburger -->
+        <div class="header-right">
+            <label class="switch" id="desktop-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider">
+                    <span class="icon-moon">🌙</span>
+                    <span class="icon-sun">☀️</span>
+                    <span class="ball"></span>
+                </span>
+            </label>
+
+            <button class="hamburger" id="hamburger" aria-label="Abrir menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+
+    </header>
+
+    <main>
+        <section class="hero">
+
+            <div class="hero-content">
+                <p class="badge">😎 SIMPLE WAY TO COMMUNICATE</p>
+
+                <h1>Actions for Accessibility in Design</h1>
+
+                <p class="description">The fastest way to build and deploy websites with resusable components.</p>
+
+                <div class="links">
+                    <button class="btn-primary">GET STARTED</button>
+                    <a href="#" class="btn-link">Get live demo</a>
+                </div>
+
+                <div class="features">
+                    <span class="feature-item">
+                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="12" fill="#22C55E"/>
+                            <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        No credit card required
+                    </span>
+                    <span class="feature-item">
+                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="12" fill="#22C55E"/>
+                            <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        No software to install
+                    </span>
+                </div>
+            </div>
+
+            <div class="hero-image">
+                <img src="assets/images/hero-image-simple-homepage.png" alt="">
+            </div>
+
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

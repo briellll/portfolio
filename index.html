@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carlos Gabriel · Dev & Analista TI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-logo"><span>//</span> cgmorais<span>.dev</span></div>
+    <ul class="nav-links">
+      <li><a href="#about">Sobre</a></li>
+      <li><a href="#experience">Experiência</a></li>
+      <li><a href="#projects">Projetos</a></li>
+      <li><a href="#formation">Formação</a></li>
+      <li><a href="#contact">Contato</a></li>
+    </ul>
+    <div class="nav-toggle" id="navToggle">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#about" onclick="closeMobile()">Sobre</a>
+    <a href="#experience" onclick="closeMobile()">Experiência</a>
+    <a href="#projects" onclick="closeMobile()">Projetos</a>
+    <a href="#formation" onclick="closeMobile()">Formação</a>
+    <a href="#contact" onclick="closeMobile()">Contato</a>
+  </div>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg-glow glow1"></div>
+    <div class="hero-bg-glow glow2"></div>
+
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-label">Analista de TI · Dev</div>
+        <h1 class="hero-title">
+          <div class="line"><span>Carlos</span></div>
+          <div class="line"><span>Gabriel</span></div>
+          <div class="line"><span class="accent">Morais.</span></div>
+        </h1>
+        <p class="hero-desc">
+          Analista de Redes Jr na <strong>Unimed</strong>, estudante de Sistemas de Informação na <strong>UFOPA</strong>.
+          Apaixonado por infraestrutura, automação e desenvolvimento.
+        </p>
+        <div class="hero-cta">
+          <a href="#projects" class="btn btn-primary"><i class="fa fa-code"></i> Ver Projetos</a>
+          <a href="#contact" class="btn btn-outline"><i class="fa fa-envelope"></i> Contato</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="photo-frame">
+          <img src="foto.jpeg" alt="Carlos Gabriel" />
+          <div class="float-badge b1"><span class="dot"></span>Disponível</div>
+          <div class="float-badge b2">{ FrontEnd · React }</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker" id="ticker">
+      <span class="ticker-item">Python <span class="sep">✦</span></span>
+      <span class="ticker-item">FastAPI <span class="sep">✦</span></span>
+      <span class="ticker-item">Redes TCP/IP <span class="sep">✦</span></span>
+      <span class="ticker-item">Git <span class="sep">✦</span></span>
+      <span class="ticker-item">React <span class="sep">✦</span></span>
+      <span class="ticker-item">HTML &amp; CSS <span class="sep">✦</span></span>
+      <span class="ticker-item">JavaScript <span class="sep">✦</span></span>
+      <span class="ticker-item">VLAN <span class="sep">✦</span></span>
+      <span class="ticker-item">DHCP <span class="sep">✦</span></span>
+      <span class="ticker-item">Automação <span class="sep">✦</span></span>
+      <span class="ticker-item">Python <span class="sep">✦</span></span>
+      <span class="ticker-item">FastAPI <span class="sep">✦</span></span>
+      <span class="ticker-item">Redes TCP/IP <span class="sep">✦</span></span>
+      <span class="ticker-item">Git <span class="sep">✦</span></span>
+      <span class="ticker-item">React <span class="sep">✦</span></span>
+      <span class="ticker-item">HTML &amp; CSS <span class="sep">✦</span></span>
+      <span class="ticker-item">JavaScript <span class="sep">✦</span></span>
+      <span class="ticker-item">VLAN <span class="sep">✦</span></span>
+      <span class="ticker-item">DHCP <span class="sep">✦</span></span>
+      <span class="ticker-item">Automação <span class="sep">✦</span></span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-inner">
+      <div class="section-label">01 — Sobre mim</div>
+      <div class="about-grid fade-up">
+        <div class="about-text">
+          <h2 class="section-title">Quem sou eu<span style="color:var(--accent)">.</span></h2>
+          <p>Oi! Sou <strong>Carlos Gabriel</strong>, analista de redes Jr na Unimed Oeste do Pará e estudante de Sistemas de Informação na UFOPA com previsão de conclusão em 2026.</p>
+          <p>Tenho experiência prática em <strong>infraestrutura de redes</strong>, configuração de equipamentos, suporte a usuários e gestão de ERPs. No lado do desenvolvimento, gosto especialmente de <strong>JavaScript</strong> para desenvolvimento web, e estou explorando cada vez mais o ecossistema web com Node, React e afins.</p>
+          <p>Baseado em <strong>Santarém, Pará</strong> — mas sempre aberto a oportunidades remotas e novos desafios.</p>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-num">6+</div>
+              <div class="stat-label">Anos de exp.</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">1</div>
+              <div class="stat-label">Empresa</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">∞</div>
+              <div class="stat-label">Curiosidade</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:1.2rem;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;">Stack Técnica</h3>
+          <div class="skills-grid">
+            <div class="skill-item"><span class="skill-icon">🐍</span><span class="skill-name">Python</span><span class="skill-level">Basico</span></div>
+            <div class="skill-item"><span class="skill-icon">⚡</span><span class="skill-name">JavaScript</span><span class="skill-level">Médio</span></div>
+            <div class="skill-item"><span class="skill-icon">🌐</span><span class="skill-name">Redes TCP/IP</span><span class="skill-level">Avançado</span></div>
+            <div class="skill-item"><span class="skill-icon">🔀</span><span class="skill-name">Git</span><span class="skill-level">Médio</span></div>
+            <div class="skill-item"><span class="skill-icon">⚛️</span><span class="skill-name">React</span><span class="skill-level">Básico</span></div>
+            <div class="skill-item"><span class="skill-icon">🎨</span><span class="skill-name">HTML / CSS</span><span class="skill-level">Médio</span></div>
+            <div class="skill-item"><span class="skill-icon">🖧</span><span class="skill-name">VLAN / PPPoE</span><span class="skill-level">Avançado</span></div>
+            <div class="skill-item"><span class="skill-icon">🔧</span><span class="skill-name">Automação</span><span class="skill-level">basico</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="section-inner">
+      <div class="section-label">02 — Experiência</div>
+      <h2 class="section-title fade-up">Trajetória profissional<span style="color:var(--accent)">.</span></h2>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">OUT 2023 — Presente</div>
+          <div class="timeline-role">Analista de Redes Jr</div>
+          <div class="timeline-company">Unimed Oeste do Pará · Santarém, PA</div>
+          <ul class="timeline-list">
+            <li>Configuração de roteadores e switches</li>
+            <li>Suporte a usuários e manutenção preventiva de equipamentos</li>
+            <li>Monitoramento de rede e configuração de PPPoE</li>
+            <li>Suporte a impressoras e sistemas internos</li>
+            <li>Implementação de sistemas internos</li>
+            <li>Elaboração de pequenos scripts para automação</li>
+            <li>Gestão de ERPs</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent2);box-shadow:0 0 0 4px rgba(124,92,252,0.15);"></div>
+          <div class="timeline-date">JUN 2019 — OUT 2023</div>
+          <div class="timeline-role">Analista de Relacionamento com Prestador Jr</div>
+          <div class="timeline-company">Unimed Oeste do Pará · Santarém, PA</div>
+          <ul class="timeline-list">
+            <li>Treinamento de prestadores no uso de sistemas internos</li>
+            <li>Parametrização de serviços e cadastros em sistema ERP</li>
+            <li>Análise e conferência de contratos</li>
+            <li>Negociação de valores e tratativas financeiras</li>
+            <li>Realização de visitas técnicas para avaliação estrutural</li>
+            <li>Apoio na implementação e melhoria de processos sistêmicos</li>
+            <li>Suporte operacional e resolução de inconsistências sistêmicas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-inner">
+      <div class="section-label">03 — Projetos</div>
+      <h2 class="section-title fade-up">O que já construí<span style="color:var(--accent)">.</span></h2>
+
+      <div class="projects-grid" id="projectsGrid">
+        <!-- Cards gerados via main.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMATION -->
+  <section id="formation">
+    <div class="section-inner">
+      <div class="section-label">04 — Formação</div>
+      <h2 class="section-title fade-up">Educação<span style="color:var(--accent)">.</span></h2>
+      <div class="formation-grid">
+        <div class="formation-card fade-up">
+          <div class="formation-icon">🎓</div>
+          <div class="formation-name">Sistemas de Informação</div>
+          <div class="formation-inst">Universidade Federal do Oeste do Pará — UFOPA</div>
+          <div class="formation-year">Previsão: 2026</div>
+        </div>
+        <div class="formation-card fade-up">
+          <div class="formation-icon">📜</div>
+          <div class="formation-name">Técnico em Informática</div>
+          <div class="formation-inst">Instituto Federal do Pará — IFPA</div>
+          <div class="formation-year">Concluído: 2017</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-inner">
+      <div class="section-label">05 — Contato</div>
+      <h2 class="section-title">Vamos conversar<span style="color:var(--accent)">.</span></h2>
+      <p class="contact-subtitle">
+        Aberto a oportunidades, projetos colaborativos ou só uma boa troca de ideia sobre tecnologia.
+      </p>
+      <div class="contact-links">
+        <a href="mailto:carloscgmorais@gmail.com" class="contact-link">
+          <i class="fa fa-envelope"></i> carloscgmorais@gmail.com
+        </a>
+        <a href="https://github.com/briellll" target="_blank" class="contact-link">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" class="contact-link">
+          <i class="fab fa-linkedin"></i> LinkedIn
+        </a>
+        <a href="tel:+5593992045909" class="contact-link">
+          <i class="fa fa-phone"></i> (93) 99204-5909
+        </a>
+      </div>
+      <a href="#hero" class="btn btn-outline"><i class="fa fa-arrow-up"></i> Voltar ao topo</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>Feito com <span>♥</span> por Carlos Gabriel Lobato Morais · <span>2026</span></p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
