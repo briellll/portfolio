@@ -1585,9 +1585,11 @@
   });
 
   document.addEventListener('click', (e) => {
-    if (e.target.closest('a')) return;
-    pular = true;              // um clique também despeja o resto
-    if (e.target.closest('button')) return;
+    // Botão não entra aqui: ele tem o próprio caminho (runOrQueue). Se entrasse,
+    // ligaria o `pular` depois de o comando já ter começado e despejaria a
+    // saída inteira — era por isso que só quem abre com título digitava.
+    if (e.target.closest('a, button')) return;
+    pular = true;              // clique no corpo despeja o resto
     const sel = getSelection();
     if (sel && String(sel).length) return;
     cmd.focus();
@@ -1597,10 +1599,9 @@
 
   function runOrQueue(name) {
     userActed = true;
-    pular = true;
     clearTimeout(idleTimer);
     if (tourOn) { tourOn = false; pending = name; return; }
-    if (busy) return;
+    if (busy) { pular = true; return; }   // clique durante a saída: despeja o resto
     cmd.value = name;
     caretFim(); render();
     cmd.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
