@@ -65,6 +65,9 @@
     z-index: 1;
     flex: 1;
     min-height: 0;
+    width: 100%;
+    max-width: 1180px;   /* uma janela, não a tela esticada */
+    margin-inline: auto;
     display: flex;
     flex-direction: column;
     border: 1px solid var(--line);
@@ -122,14 +125,69 @@
   .bar .mail { color: var(--cool); border-color: color-mix(in srgb, var(--cool) 26%, transparent); user-select: all; }
   @media (max-width: 580px) { .bar .hide-sm { display: none; } }
 
-  /* ---- corpo ---- */
+  /* ---- corpo: terminal + ficha ---- */
+  .corpo { flex: 1; min-height: 0; display: flex; }
+
   .term {
-    flex: 1; min-height: 0;
+    flex: 1; min-width: 0; min-height: 0;
     overflow-y: auto; overflow-x: hidden;
     padding: 14px 12px 20px;
     scrollbar-width: thin;
     scrollbar-color: var(--line) transparent;
   }
+
+  /* O que ninguém deveria precisar digitar um comando para ver. */
+  .ficha {
+    flex: none;
+    width: 244px;
+    border-left: 1px solid var(--line);
+    padding: 14px 14px 18px 16px;
+    overflow-y: auto;
+    font-family: var(--sans);
+    font-size: .76rem;
+    line-height: 1.5;
+    color: var(--dim);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  .ficha .marca {
+    margin: 0 0 12px;
+    font-family: var(--mono);
+    font-size: .56rem;
+    line-height: 1.1;
+    color: var(--hot);
+    opacity: .8;
+    white-space: pre;
+  }
+  .ficha .nome {
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--fg);
+    letter-spacing: .01em;
+  }
+  .ficha .cargo { color: var(--hot); padding-bottom: 12px; }
+  .ficha dl {
+    margin: 0;
+    padding: 11px 0;
+    border-top: 1px solid var(--line);
+  }
+  .ficha dt {
+    font-size: .68rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--dim) 75%, transparent);
+  }
+  .ficha dd { margin: 0 0 7px; color: var(--fg); overflow-wrap: anywhere; }
+  .ficha dd:last-child { margin-bottom: 0; }
+  .ficha dd.sel { user-select: all; color: var(--cool); }
+  .ficha .rodape {
+    padding-top: 11px;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* tela estreita: a ficha sai e o conteúdo dela continua nos comandos */
+  @media (max-width: 1000px) { .ficha { display: none; } }
 
   /* 94 colunas: largura de terminal de verdade, e o texto não corre a tela inteira */
   .ln { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 94ch; }
@@ -300,7 +358,43 @@
     <span class="pill ok" id="stat">pronto</span>
   </div>
 
-  <div class="term" id="term" role="log" aria-live="polite" aria-label="Saída do terminal"></div>
+  <div class="corpo">
+    <div class="term" id="term" role="log" aria-live="polite" aria-label="Saída do terminal"></div>
+
+    <aside class="ficha" aria-label="Resumo">
+      <pre class="marca">  .------.
+ / .--.  \
+| |    |  |
+| |  .-'  |
+ \ '-'   /
+  '-----'</pre>
+
+      <div class="nome">Gabriel Morais</div>
+      <div class="cargo">Analista de Redes Jr</div>
+
+      <dl>
+        <dt>empresa</dt>
+        <dd>Unimed Oeste do Pará</dd>
+        <dt>local</dt>
+        <dd>Santarém — Pará</dd>
+        <dt>formação</dt>
+        <dd>Sistemas de Informação · UFOPA</dd>
+        <dt>estudando</dt>
+        <dd>segurança da informação</dd>
+      </dl>
+
+      <dl>
+        <dt>email</dt>
+        <dd class="sel">carloscgmorais@gmail.com</dd>
+        <dt>github</dt>
+        <dd><a href="https://github.com/briellll" target="_blank" rel="noopener">@briellll</a></dd>
+        <dt>linkedin</dt>
+        <dd><a href="https://linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" rel="noopener">/in/carlos-gabriel</a></dd>
+      </dl>
+
+      <div class="rodape">sessão aberta há <span data-up>—</span></div>
+    </aside>
+  </div>
 
   <div class="prompt" id="promptRow">
     <span class="ps1" id="ps1">gabriel@shell:~$</span>
