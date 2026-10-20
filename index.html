@@ -44,7 +44,7 @@
     overflow: hidden;
   }
 
-  #rain { position: fixed; inset: 0; z-index: 0; opacity: .16; pointer-events: none; }
+  #rain { position: fixed; inset: 0; z-index: 0; opacity: .13; pointer-events: none; }
   #rain[hidden] { display: none !important; }
 
   body::after {
@@ -150,14 +150,16 @@
     scrollbar-width: thin;
     scrollbar-color: var(--line) transparent;
   }
-  .ficha .marca {
-    margin: 0 0 12px;
-    font-family: var(--mono);
-    font-size: .56rem;
-    line-height: 1.1;
-    color: var(--hot);
-    opacity: .8;
-    white-space: pre;
+  .ficha .retrato {
+    display: block;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;          /* redondo, como no LinkedIn */
+    object-fit: cover;
+    margin: 0 0 13px;
+    border: 1px solid color-mix(in srgb, var(--hot) 48%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--hot) 9%, transparent);
+    filter: saturate(.82) contrast(1.04);
   }
   .ficha .nome {
     font-weight: 600;
@@ -180,8 +182,26 @@
   .ficha dd { margin: 0 0 7px; color: var(--fg); overflow-wrap: anywhere; }
   .ficha dd:last-child { margin-bottom: 0; }
   .ficha dd.sel { user-select: all; color: var(--cool); }
+  .ficha .baixar {
+    display: block;
+    margin: 11px 0 0;
+    padding: 8px 10px;
+    border: 1px solid color-mix(in srgb, var(--hot) 38%, transparent);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--hot) 8%, transparent);
+    color: var(--fg);
+    text-decoration: none;
+    line-height: 1.3;
+  }
+  .ficha .baixar:hover {
+    border-color: var(--hot);
+    background: color-mix(in srgb, var(--hot) 16%, transparent);
+  }
+  .ficha .baixar b { display: block; font-weight: 600; color: var(--hot); }
+  .ficha .baixar span { font-size: .68rem; letter-spacing: .05em; }
   .ficha .rodape {
     padding-top: 11px;
+    margin-top: 11px;
     border-top: 1px solid var(--line);
     font-variant-numeric: tabular-nums;
   }
@@ -362,12 +382,8 @@
     <div class="term" id="term" role="log" aria-live="polite" aria-label="Saída do terminal"></div>
 
     <aside class="ficha" aria-label="Resumo">
-      <pre class="marca">  .------.
- / .--.  \
-| |    |  |
-| |  .-'  |
- \ '-'   /
-  '-----'</pre>
+      <img class="retrato" src="avatar.jpg" width="88" height="88"
+           alt="Gabriel Morais" loading="lazy" decoding="async">
 
       <div class="nome">Gabriel Morais</div>
       <div class="cargo">Analista de Redes Jr</div>
@@ -391,6 +407,11 @@
         <dt>linkedin</dt>
         <dd><a href="https://linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" rel="noopener">/in/carlos-gabriel</a></dd>
       </dl>
+
+      <a class="baixar" href="curriculo-gabriel-morais.pdf" download="curriculo-gabriel-morais.pdf">
+        <b>Baixar currículo</b>
+        <span>PDF · 2 páginas · 7 KB</span>
+      </a>
 
       <div class="rodape">sessão aberta há <span data-up>—</span></div>
     </aside>
@@ -618,32 +639,88 @@
 
   const rainCv = document.getElementById('rain');
   const rainCtx = rainCv.getContext('2d');
-  const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF<>/\\$#@%&*';
-  let rainOn = false, rainId = 0, drops = [];
-  const rainStep = 16;
+  const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロ0123456789';
+  const PASSO = 17;                 // altura da célula, em px
+  let rainOn = false, rainId = 0, colunas = [], rainAntes = 0;
+
+  function novaColuna(x, acima) {
+    return {
+      x,
+      y: acima ? -rand(3, 45) : rand(-45, 2),
+      vel: rand(3, 10),             // LINHAS por segundo, não pixels por quadro
+      glifo: GLYPHS[(Math.random() * GLYPHS.length) | 0],
+      antGlifo: '',
+      antY: -99,
+      linha: -999
+    };
+  }
 
   function rainSize() {
+    // aba oculta ou painel fechado: a janela mede 0 e o canvas ficaria 0×0
+    // para sempre. Sai sem mexer e tenta de novo no resize ou no próximo quadro.
+    if (!innerWidth || !innerHeight) return;
     const dpr = Math.min(devicePixelRatio || 1, 2);
     rainCv.width = innerWidth * dpr;
     rainCv.height = innerHeight * dpr;
     rainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drops = Array.from({ length: Math.ceil(innerWidth / rainStep) }, () => rand(-40, 0));
+    rainCtx.clearRect(0, 0, innerWidth, innerHeight);
+    const n = Math.ceil(innerWidth / PASSO);
+    colunas = Array.from({ length: n }, (_, i) => novaColuna(i * PASSO, false));
   }
 
-  function rainFrame() {
+  /* A queda é em linhas por segundo, e o glifo fica parado na linha enquanto a
+     coluna não avança — é isso que faz parecer caractere e não risco contínuo.
+     A cabeça sai clara, a linha logo atrás é repintada na cor do fósforo, e o
+     rastro vem do escurecimento gradual do que já foi desenhado. */
+  function rainFrame(agora) {
     rainId = 0;
-    rainCtx.fillStyle = 'rgba(7,8,5,.09)';
-    rainCtx.fillRect(0, 0, innerWidth, innerHeight);
-    rainCtx.font = '600 14px ' + getComputedStyle(document.body).fontFamily;
-    rainCtx.fillStyle = token('--hot');
-    for (let i = 0; i < drops.length; i++) {
-      const ch = GLYPHS[(Math.random() * GLYPHS.length) | 0];
-      const y = drops[i] * rainStep;
-      rainCtx.globalAlpha = .85;
-      rainCtx.fillText(ch, i * rainStep, y);
-      if (y > innerHeight && Math.random() > .975) drops[i] = 0;
-      drops[i] += .55;
+    const dt = Math.min((agora - rainAntes) / 1000, .1);
+    rainAntes = agora;
+    if (!rainCv.width && innerWidth) rainSize();
+    if (!colunas.length) {
+      if (rainOn && !document.hidden) rainId = requestAnimationFrame(rainFrame);
+      return;
     }
+
+    // apaga de verdade, reduzindo a opacidade do que já foi desenhado. Pintar
+    // um retângulo escuro por cima acumularia alpha e o canvas viraria um véu.
+    rainCtx.globalCompositeOperation = 'destination-out';
+    rainCtx.fillStyle = 'rgba(0, 0, 0, ' + Math.min(.4, dt * 1.7).toFixed(3) + ')';
+    rainCtx.fillRect(0, 0, innerWidth, innerHeight);
+    rainCtx.globalCompositeOperation = 'source-over';
+
+    const face = getComputedStyle(document.body).fontFamily;
+    const corCabeca = token('--fg'), corRastro = token('--hot');
+    rainCtx.font = '500 ' + (PASSO - 3) + 'px ' + face;
+    const ultimaLinha = innerHeight / PASSO;
+
+    for (const c of colunas) {
+      c.y += c.vel * dt;
+      const linha = Math.floor(c.y);
+
+      if (linha !== c.linha) {
+        c.antGlifo = c.glifo;
+        c.antY = c.linha * PASSO;
+        c.linha = linha;
+        c.glifo = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      } else if (Math.random() < dt * 1.1) {
+        c.glifo = GLYPHS[(Math.random() * GLYPHS.length) | 0];   // pisca no lugar
+      }
+
+      if (c.antGlifo && c.antY >= 0 && c.antY <= innerHeight) {
+        rainCtx.globalAlpha = .7;
+        rainCtx.fillStyle = corRastro;
+        rainCtx.fillText(c.antGlifo, c.x, c.antY);
+      }
+      if (linha >= 0 && linha <= ultimaLinha) {
+        rainCtx.globalAlpha = .95;
+        rainCtx.fillStyle = corCabeca;
+        rainCtx.fillText(c.glifo, c.x, linha * PASSO);
+      }
+
+      if (c.y > ultimaLinha + rand(5, 35)) Object.assign(c, novaColuna(c.x, true));
+    }
+
     rainCtx.globalAlpha = 1;
     if (rainOn && !document.hidden) rainId = requestAnimationFrame(rainFrame);
   }
@@ -651,8 +728,14 @@
   function toggleRain(on) {
     rainOn = on;
     rainCv.hidden = !on;
-    if (on) { rainSize(); if (!rainId) rainId = requestAnimationFrame(rainFrame); }
-    else { cancelAnimationFrame(rainId); rainId = 0; rainCtx.clearRect(0, 0, innerWidth, innerHeight); }
+    if (on) {
+      rainSize();
+      rainAntes = performance.now();
+      if (!rainId) rainId = requestAnimationFrame(rainFrame);
+    } else {
+      cancelAnimationFrame(rainId); rainId = 0;
+      rainCtx.clearRect(0, 0, innerWidth, innerHeight);
+    }
   }
   addEventListener('resize', () => { if (rainOn) rainSize(); });
 
@@ -1172,7 +1255,8 @@
     cat:        ['cat readme.md', 'Imprime um arquivo. Digite ls antes para ver quais existem.'],
     ls:         ['ls · ls experiencia', 'Lista os arquivos. Sem argumento mostra as pastas.'],
     theme:      ['theme green', 'Troca a cor do terminal: amber, green, ice ou paper.'],
-    matrix:     ['matrix · matrix off', 'Liga ou desliga a chuva de caracteres no fundo.'],
+    matrix:     ['matrix · matrix off', 'Liga ou desliga a chuva de caracteres no fundo. Vem ligada.'],
+    curriculo:  ['curriculo', 'Link para baixar o currículo em PDF. Também responde por cv.'],
     neofetch:   ['neofetch', 'Resumo das informações principais, com o logo ao lado.'],
     show:       ['show 1', 'Abre um projeto pelo número que aparece em projects.'],
     guia:       ['guia', 'Explica como usar esta página para quem nunca mexeu num terminal.'],
@@ -1221,6 +1305,7 @@
         ['theme green', 'troca a cor: amber, green, ice ou paper'],
         ['matrix',      'chuva de caracteres no fundo'],
         ['contact',     'como falar comigo'],
+        ['curriculo',   'baixar o currículo em PDF'],
         ['history',     'comandos desta sessão'],
         ['clear',       'limpa a tela']
       ]);
@@ -1481,12 +1566,25 @@
     contact: async () => {
       line('<span class="dim">canais</span>', 'pad');
       table([
-        ['email',    '<span class="cool">carloscgmorais@gmail.com</span>'],
-        ['linkedin', '<a href="https://linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" rel="noopener">/in/carlos-gabriel-78b23a155</a>'],
-        ['github',   '<a href="https://github.com/briellll" target="_blank" rel="noopener">@briellll</a>'],
-        ['local',    'Santarém — Pará']
+        ['email',     '<span class="cool">carloscgmorais@gmail.com</span>'],
+        ['linkedin',  '<a href="https://linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" rel="noopener">/in/carlos-gabriel-78b23a155</a>'],
+        ['github',    '<a href="https://github.com/briellll" target="_blank" rel="noopener">@briellll</a>'],
+        ['local',     'Santarém — Pará'],
+        ['currículo', '<a href="curriculo-gabriel-morais.pdf" download="curriculo-gabriel-morais.pdf">baixar em PDF</a>']
       ]);
     },
+
+    // o botão da ficha some em tela estreita; aqui o currículo continua à mão
+    curriculo: async () => {
+      line('<span class="dim">currículo em PDF · 2 páginas</span>', 'pad');
+      blank();
+      line('<a href="curriculo-gabriel-morais.pdf" download="curriculo-gabriel-morais.pdf">baixar curriculo-gabriel-morais.pdf</a>');
+      blank();
+      line('<span class="dim">mesmo conteúdo que está em </span>' + kbd('experiencia') +
+           '<span class="dim"> e </span>' + kbd('certs') + '<span class="dim">.</span>');
+    },
+
+    cv: async () => { await COMMANDS.curriculo(); },
 
     history: async () => {
       if (!history.length) { line('<span class="dim">nenhum comando ainda.</span>', 'pad'); return; }
@@ -1707,6 +1805,7 @@
     busy = true;
     tick();
     setInterval(tick, 1000);
+    if (!REDUCED.matches) toggleRain(true);   // ligada por padrão
 
     const b = document.createElement('div');
     b.className = 'banner';
