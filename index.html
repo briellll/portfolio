@@ -382,8 +382,10 @@
     <div class="term" id="term" role="log" aria-live="polite" aria-label="Saída do terminal"></div>
 
     <aside class="ficha" aria-label="Resumo">
+      <!-- sem loading=lazy: a ficha fica escondida abaixo de 1000px e o
+           navegador não baixa imagem dentro de elemento oculto -->
       <img class="retrato" src="avatar.jpg" width="88" height="88"
-           alt="Gabriel Morais" loading="lazy" decoding="async">
+           alt="Gabriel Morais" decoding="async">
 
       <div class="nome">Gabriel Morais</div>
       <div class="cargo">Analista de Redes Jr</div>
