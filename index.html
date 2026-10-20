@@ -1,252 +1,1663 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Carlos Gabriel · Dev & Analista TI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
+<title>Shell Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+  /* Layout: janela de terminal em tela cheia — statusline no topo (estilo tmux),
+     corpo rolavel com a saida, prompt no rodape. */
+  :root {
+    color-scheme: dark;
 
-  <!-- Custom Cursor -->
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
+    --bg:       #0b0c0a;
+    --bg-raise: #13140f;
+    --bg-sunk:  #070805;
+    --fg:       #d9cbb0;
+    --dim:      #6f6a5c;
+    --line:     #23241d;
 
-  <!-- NAV -->
-  <nav id="nav">
-    <div class="nav-logo"><span>//</span> cgmorais<span>.dev</span></div>
-    <ul class="nav-links">
-      <li><a href="#about">Sobre</a></li>
-      <li><a href="#experience">Experiência</a></li>
-      <li><a href="#projects">Projetos</a></li>
-      <li><a href="#formation">Formação</a></li>
-      <li><a href="#contact">Contato</a></li>
-    </ul>
-    <div class="nav-toggle" id="navToggle">
-      <span></span><span></span><span></span>
-    </div>
-  </nav>
+    --hot:      #ffb000;
+    --cool:     #5fd3bc;
+    --warn:     #e0614a;
 
-  <!-- Mobile menu -->
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="#about" onclick="closeMobile()">Sobre</a>
-    <a href="#experience" onclick="closeMobile()">Experiência</a>
-    <a href="#projects" onclick="closeMobile()">Projetos</a>
-    <a href="#formation" onclick="closeMobile()">Formação</a>
-    <a href="#contact" onclick="closeMobile()">Contato</a>
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --fs: 14px;
+  }
+
+  @media (max-width: 620px) { :root { --fs: 12.5px; } }
+  @media (max-width: 400px) { :root { --fs: 11.5px; } }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: var(--fs);
+    line-height: 1.65;
+    display: flex;
+    flex-direction: column;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 12px;
+    overflow: hidden;
+  }
+
+  #rain { position: fixed; inset: 0; z-index: 0; opacity: .16; pointer-events: none; }
+  #rain[hidden] { display: none !important; }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,.2) 3px, rgba(0,0,0,.2) 4px);
+    mix-blend-mode: multiply;
+  }
+
+  .win {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--bg-sunk);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--hot) 5%, transparent),
+                0 24px 70px -30px color-mix(in srgb, var(--hot) 20%, transparent);
+    overflow: hidden;
+    transform-origin: center;
+    animation: crt-on .62s cubic-bezier(.2,.9,.2,1) both;
+  }
+
+  @keyframes crt-on {
+    0%   { transform: scaleY(.004) scaleX(.6); opacity: 0; filter: brightness(3); }
+    35%  { transform: scaleY(.004) scaleX(1);  opacity: 1; filter: brightness(3); }
+    65%  { transform: scaleY(1) scaleX(1);     filter: brightness(1.5); }
+    80%  { filter: brightness(.8); }
+    100% { transform: scaleY(1) scaleX(1);     filter: brightness(1); }
+  }
+
+  /* ---- statusline ---- */
+  .bar {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 12px;
+    background: var(--bg-raise);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--sans);
+    font-size: .78rem;
+    letter-spacing: .04em;
+    color: var(--dim);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .bar b {
+    font-weight: 600;
+    color: var(--bg-sunk);
+    background: var(--hot);
+    padding: 1px 8px;
+    border-radius: 2px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    flex: none;
+  }
+  .bar .pill {
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 1px 7px;
+    flex: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar .sep { flex: 1; min-width: 8px; }
+  .bar .ok  { color: var(--cool); border-color: color-mix(in srgb, var(--cool) 30%, transparent); }
+  .bar .run { color: var(--hot);  border-color: color-mix(in srgb, var(--hot) 35%, transparent); }
+  .bar .mail { color: var(--cool); border-color: color-mix(in srgb, var(--cool) 26%, transparent); user-select: all; }
+  @media (max-width: 580px) { .bar .hide-sm { display: none; } }
+
+  /* ---- corpo ---- */
+  .term {
+    flex: 1; min-height: 0;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 14px 12px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+
+  /* 94 colunas: largura de terminal de verdade, e o texto não corre a tela inteira */
+  .ln { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 94ch; }
+  .ln.pad { padding-top: .55em; }
+
+  /* linha ainda não alcançada pela digitação */
+  .pend { display: none !important; }
+  /* item de lista: a linha que quebra alinha sob o texto, não na margem */
+  .ln.li { padding-left: 1.75em; text-indent: -1.75em; }
+
+  .hot  { color: var(--hot); }
+  .cool { color: var(--cool); }
+  .dim  { color: var(--dim); }
+  .warn { color: var(--warn); }
+  .b    { font-weight: 600; }
+
+  .cmdhint {
+    font-family: var(--mono);
+    color: var(--hot);
+    background: color-mix(in srgb, var(--hot) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--hot) 26%, transparent);
+    border-radius: 2px;
+    padding: 0 5px;
+  }
+
+  .banner {
+    color: var(--hot);
+    font-size: clamp(.46rem, 2vw, .76rem);
+    line-height: 1.15;
+    white-space: pre;
+    overflow-x: auto;
+    text-shadow: 0 0 18px color-mix(in srgb, var(--hot) 32%, transparent);
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  a { color: var(--cool); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--hot); outline-offset: 2px; }
+
+  .tbl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0 1.2em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tbl > span { white-space: pre-wrap; overflow-wrap: anywhere; }
+  @media (max-width: 430px) {
+    .tbl { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .tbl > span:nth-child(odd) { padding-top: .45em; }
+  }
+
+  .fetch { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; padding-top: .55em; }
+  .fetch pre {
+    margin: 0;
+    color: var(--hot);
+    font-size: clamp(.5rem, 1.5vw, .72rem);
+    line-height: 1.1;
+    text-shadow: 0 0 14px color-mix(in srgb, var(--hot) 28%, transparent);
+  }
+  .fetch .meta { flex: 1; min-width: 215px; }
+
+  .widget {
+    margin: .6em 0;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--bg);
+    padding: 10px;
+    max-width: 100%;
+  }
+  .widget canvas { display: block; width: 100%; height: auto; max-width: 100%; }
+  .widget .cap {
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .05em;
+    color: var(--dim);
+    padding-top: 8px;
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .widget .cap i { font-style: normal; display: inline-flex; align-items: center; gap: 5px; }
+  .widget .cap i::before { content: ""; width: 7px; height: 7px; border-radius: 1px; background: currentColor; }
+
+  .quadro {
+    border-left: 2px solid color-mix(in srgb, var(--hot) 35%, transparent);
+    padding-left: 10px;
+    margin: .5em 0;
+  }
+
+  /* ---- prompt ---- */
+  .prompt { display: flex; align-items: baseline; gap: .55em; padding: 0 12px 14px; }
+  .prompt .ps1 { color: var(--hot); white-space: nowrap; font-weight: 500; }
+  .prompt.lab .ps1 { color: var(--cool); }
+  .prompt .wrap { position: relative; flex: 1; min-width: 0; }
+  .prompt .echo { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  .cur {
+    display: inline-block;
+    width: .58em; height: 1.05em;
+    vertical-align: text-bottom;
+    background: var(--hot);
+    translate: 0 .18em;
+  }
+  .prompt.lab .cur { background: var(--cool); }
+  .cur.blink { animation: blink 1.05s steps(1) infinite; }
+  @keyframes blink { 0%, 50% { opacity: 1 } 50.01%, 100% { opacity: 0 } }
+
+  #cmd {
+    position: absolute; inset: 0; width: 100%;
+    opacity: 0; border: 0; padding: 0;
+    font: inherit; background: transparent;
+    color: transparent; caret-color: transparent;
+  }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  .hint {
+    padding: 0 12px 13px;
+    font-family: var(--sans);
+    font-size: .74rem;
+    color: var(--dim);
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch;
+  }
+  .hint button {
+    font: inherit;
+    text-align: left;
+    color: var(--fg);
+    background: color-mix(in srgb, var(--hot) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--hot) 28%, transparent);
+    border-radius: 2px;
+    padding: 4px 10px;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    line-height: 1.25;
+  }
+  .hint button b { font-weight: 600; }
+  .hint button i {
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--dim);
+  }
+  .hint button:hover {
+    border-color: var(--hot);
+    background: color-mix(in srgb, var(--hot) 13%, transparent);
+  }
+  .hint button.ghost { background: transparent; border-color: var(--line); color: var(--dim); }
+  .hint button.ghost:hover { border-color: color-mix(in srgb, var(--cool) 45%, transparent); }
+  /* quebra a barra em duas fileiras: conteúdo em cima, extras embaixo */
+  .hint .quebra { flex-basis: 100%; height: 0; }
+  .hint .keys { margin-left: auto; align-self: center; }
+  @media (max-width: 760px) { .hint .keys { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cur.blink { animation: none; }
+    body::after { display: none; }
+    .win { animation: none; }
+  }
+</style>
+
+<canvas id="rain" hidden aria-hidden="true"></canvas>
+
+<div class="win">
+  <div class="bar">
+    <b>sec</b>
+    <span class="pill">gabriel@shell</span>
+    <span class="pill hide-sm">Santarém · PA</span>
+    <span class="sep"></span>
+    <span class="pill mail hide-sm">carloscgmorais@gmail.com</span>
+    <span class="pill hide-sm" id="clock">--:--</span>
+    <span class="pill ok" id="stat">pronto</span>
   </div>
 
-  <!-- HERO -->
-  <section id="hero">
-    <div class="hero-bg-glow glow1"></div>
-    <div class="hero-bg-glow glow2"></div>
+  <div class="term" id="term" role="log" aria-live="polite" aria-label="Saída do terminal"></div>
 
-    <div class="hero-grid">
-      <div class="hero-content">
-        <div class="hero-label">Analista de TI · Dev</div>
-        <h1 class="hero-title">
-          <div class="line"><span>Carlos</span></div>
-          <div class="line"><span>Gabriel</span></div>
-          <div class="line"><span class="accent">Morais.</span></div>
-        </h1>
-        <p class="hero-desc">
-          Analista de Redes Jr na <strong>Unimed</strong>, estudante de Sistemas de Informação na <strong>UFOPA</strong>.
-          Apaixonado por infraestrutura, automação e desenvolvimento.
-        </p>
-        <div class="hero-cta">
-          <a href="#projects" class="btn btn-primary"><i class="fa fa-code"></i> Ver Projetos</a>
-          <a href="#contact" class="btn btn-outline"><i class="fa fa-envelope"></i> Contato</a>
-        </div>
-      </div>
-
-      <div class="hero-visual">
-        <div class="photo-frame">
-          <img src="foto.jpeg" alt="Carlos Gabriel" />
-          <div class="float-badge b1"><span class="dot"></span>Disponível</div>
-          <div class="float-badge b2">{ FrontEnd · React }</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TICKER -->
-  <div class="ticker-wrap">
-    <div class="ticker" id="ticker">
-      <span class="ticker-item">Python <span class="sep">✦</span></span>
-      <span class="ticker-item">FastAPI <span class="sep">✦</span></span>
-      <span class="ticker-item">Redes TCP/IP <span class="sep">✦</span></span>
-      <span class="ticker-item">Git <span class="sep">✦</span></span>
-      <span class="ticker-item">React <span class="sep">✦</span></span>
-      <span class="ticker-item">HTML &amp; CSS <span class="sep">✦</span></span>
-      <span class="ticker-item">JavaScript <span class="sep">✦</span></span>
-      <span class="ticker-item">VLAN <span class="sep">✦</span></span>
-      <span class="ticker-item">DHCP <span class="sep">✦</span></span>
-      <span class="ticker-item">Automação <span class="sep">✦</span></span>
-      <span class="ticker-item">Python <span class="sep">✦</span></span>
-      <span class="ticker-item">FastAPI <span class="sep">✦</span></span>
-      <span class="ticker-item">Redes TCP/IP <span class="sep">✦</span></span>
-      <span class="ticker-item">Git <span class="sep">✦</span></span>
-      <span class="ticker-item">React <span class="sep">✦</span></span>
-      <span class="ticker-item">HTML &amp; CSS <span class="sep">✦</span></span>
-      <span class="ticker-item">JavaScript <span class="sep">✦</span></span>
-      <span class="ticker-item">VLAN <span class="sep">✦</span></span>
-      <span class="ticker-item">DHCP <span class="sep">✦</span></span>
-      <span class="ticker-item">Automação <span class="sep">✦</span></span>
-    </div>
+  <div class="prompt" id="promptRow">
+    <span class="ps1" id="ps1">gabriel@shell:~$</span>
+    <span class="wrap">
+      <span class="echo" id="echoA"></span><span class="cur blink" id="cur"></span><span class="echo" id="echoB"></span>
+      <label for="cmd" class="sr">Digite um comando</label>
+      <input id="cmd" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </span>
   </div>
 
-  <!-- ABOUT -->
-  <section id="about">
-    <div class="section-inner">
-      <div class="section-label">01 — Sobre mim</div>
-      <div class="about-grid fade-up">
-        <div class="about-text">
-          <h2 class="section-title">Quem sou eu<span style="color:var(--accent)">.</span></h2>
-          <p>Oi! Sou <strong>Carlos Gabriel</strong>, analista de redes Jr na Unimed Oeste do Pará e estudante de Sistemas de Informação na UFOPA com previsão de conclusão em 2026.</p>
-          <p>Tenho experiência prática em <strong>infraestrutura de redes</strong>, configuração de equipamentos, suporte a usuários e gestão de ERPs. No lado do desenvolvimento, gosto especialmente de <strong>JavaScript</strong> para desenvolvimento web, e estou explorando cada vez mais o ecossistema web com Node, React e afins.</p>
-          <p>Baseado em <strong>Santarém, Pará</strong> — mas sempre aberto a oportunidades remotas e novos desafios.</p>
-          <div class="stats-row">
-            <div class="stat">
-              <div class="stat-num">6+</div>
-              <div class="stat-label">Anos de exp.</div>
-            </div>
-            <div class="stat">
-              <div class="stat-num">1</div>
-              <div class="stat-label">Empresa</div>
-            </div>
-            <div class="stat">
-              <div class="stat-num">∞</div>
-              <div class="stat-label">Curiosidade</div>
-            </div>
-          </div>
-        </div>
+  <div class="hint" id="hint">
+    <button type="button" data-run="whoami"><b>Quem sou</b><i>whoami</i></button>
+    <button type="button" data-run="experiencia"><b>Experiência</b><i>experiencia</i></button>
+    <button type="button" data-run="certs"><b>Formação e cursos</b><i>certs</i></button>
+    <button type="button" data-run="stack"><b>Ferramentas</b><i>stack</i></button>
+    <button type="button" data-run="projects"><b>Projetos</b><i>projects</i></button>
+    <button type="button" data-run="contact"><b>Contato</b><i>contact</i></button>
+    <span class="quebra"></span>
+    <button type="button" data-run="scan" class="ghost"><b>Áreas que eu cubro</b><i>scan</i></button>
+    <button type="button" data-run="traceroute" class="ghost"><b>Trajetória</b><i>traceroute</i></button>
+    <button type="button" data-run="lab" class="ghost"><b>Lab de Linux</b><i>lab</i></button>
+    <button type="button" data-run="help" class="ghost"><b>Todos os comandos</b><i>help</i></button>
+    <span class="keys">↑↓ histórico · Tab completa · Ctrl-L limpa</span>
+  </div>
+</div>
 
-        <div>
-          <h3 style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:1.2rem;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;">Stack Técnica</h3>
-          <div class="skills-grid">
-            <div class="skill-item"><span class="skill-icon">🐍</span><span class="skill-name">Python</span><span class="skill-level">Basico</span></div>
-            <div class="skill-item"><span class="skill-icon">⚡</span><span class="skill-name">JavaScript</span><span class="skill-level">Médio</span></div>
-            <div class="skill-item"><span class="skill-icon">🌐</span><span class="skill-name">Redes TCP/IP</span><span class="skill-level">Avançado</span></div>
-            <div class="skill-item"><span class="skill-icon">🔀</span><span class="skill-name">Git</span><span class="skill-level">Médio</span></div>
-            <div class="skill-item"><span class="skill-icon">⚛️</span><span class="skill-name">React</span><span class="skill-level">Básico</span></div>
-            <div class="skill-item"><span class="skill-icon">🎨</span><span class="skill-name">HTML / CSS</span><span class="skill-level">Médio</span></div>
-            <div class="skill-item"><span class="skill-icon">🖧</span><span class="skill-name">VLAN / PPPoE</span><span class="skill-level">Avançado</span></div>
-            <div class="skill-item"><span class="skill-icon">🔧</span><span class="skill-name">Automação</span><span class="skill-level">basico</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<script>
+(function () {
+  'use strict';
 
-  <!-- EXPERIENCE -->
-  <section id="experience">
-    <div class="section-inner">
-      <div class="section-label">02 — Experiência</div>
-      <h2 class="section-title fade-up">Trajetória profissional<span style="color:var(--accent)">.</span></h2>
+  const term  = document.getElementById('term');
+  const echoA = document.getElementById('echoA');
+  const echoB = document.getElementById('echoB');
+  const cur   = document.getElementById('cur');
+  const cmd   = document.getElementById('cmd');
+  const stat  = document.getElementById('stat');
+  const clock = document.getElementById('clock');
+  const ps1   = document.getElementById('ps1');
+  const promptRow = document.getElementById('promptRow');
 
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-date">OUT 2023 — Presente</div>
-          <div class="timeline-role">Analista de Redes Jr</div>
-          <div class="timeline-company">Unimed Oeste do Pará · Santarém, PA</div>
-          <ul class="timeline-list">
-            <li>Configuração de roteadores e switches</li>
-            <li>Suporte a usuários e manutenção preventiva de equipamentos</li>
-            <li>Monitoramento de rede e configuração de PPPoE</li>
-            <li>Suporte a impressoras e sistemas internos</li>
-            <li>Implementação de sistemas internos</li>
-            <li>Elaboração de pequenos scripts para automação</li>
-            <li>Gestão de ERPs</li>
-          </ul>
-        </div>
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const kbd = c => '<span class="cmdhint">' + esc(c) + '</span>';
 
-        <div class="timeline-item">
-          <div class="timeline-dot" style="background:var(--accent2);box-shadow:0 0 0 4px rgba(124,92,252,0.15);"></div>
-          <div class="timeline-date">JUN 2019 — OUT 2023</div>
-          <div class="timeline-role">Analista de Relacionamento com Prestador Jr</div>
-          <div class="timeline-company">Unimed Oeste do Pará · Santarém, PA</div>
-          <ul class="timeline-list">
-            <li>Treinamento de prestadores no uso de sistemas internos</li>
-            <li>Parametrização de serviços e cadastros em sistema ERP</li>
-            <li>Análise e conferência de contratos</li>
-            <li>Negociação de valores e tratativas financeiras</li>
-            <li>Realização de visitas técnicas para avaliação estrutural</li>
-            <li>Apoio na implementação e melhoria de processos sistêmicos</li>
-            <li>Suporte operacional e resolução de inconsistências sistêmicas</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
+  let busy = false;
+  const history = [];
+  let histAt = 0;
+  const bootedAt = Date.now();
+  let tourOn = false, userActed = false, nudged = false, idleTimer = 0;
 
-  <!-- PROJECTS -->
-  <section id="projects">
-    <div class="section-inner">
-      <div class="section-label">03 — Projetos</div>
-      <h2 class="section-title fade-up">O que já construí<span style="color:var(--accent)">.</span></h2>
+  /* ---------------- saida ---------------- */
 
-      <div class="projects-grid" id="projectsGrid">
-        <!-- Cards gerados via main.js -->
-      </div>
-    </div>
-  </section>
+  /* Cadência da saída.
+     O texto não é digitado letra por letra — ninguém espera isso para ler um
+     parágrafo. Cada linha entra inteira, com um intervalo curto entre elas: dá
+     o ritmo de terminal sem fazer o visitante aguardar. Saída longa acelera
+     sozinha, e qualquer tecla ou clique despeja o resto de uma vez. */
 
-  <!-- FORMATION -->
-  <section id="formation">
-    <div class="section-inner">
-      <div class="section-label">04 — Formação</div>
-      <h2 class="section-title fade-up">Educação<span style="color:var(--accent)">.</span></h2>
-      <div class="formation-grid">
-        <div class="formation-card fade-up">
-          <div class="formation-icon">🎓</div>
-          <div class="formation-name">Sistemas de Informação</div>
-          <div class="formation-inst">Universidade Federal do Oeste do Pará — UFOPA</div>
-          <div class="formation-year">Previsão: 2026</div>
-        </div>
-        <div class="formation-card fade-up">
-          <div class="formation-icon">📜</div>
-          <div class="formation-name">Técnico em Informática</div>
-          <div class="formation-inst">Instituto Federal do Pará — IFPA</div>
-          <div class="formation-year">Concluído: 2017</div>
-        </div>
-      </div>
-    </div>
-  </section>
+  /* Digitação caractere a caractere.
+     Tudo que sai é escrito letra por letra, como se houvesse alguém do outro
+     lado. Para não virar espera, a velocidade sobe conforme a saída avança: o
+     começo é lento o bastante para se notar, o resto preenche depressa. E
+     qualquer tecla ou clique escreve o resto de uma vez. */
 
-  <!-- CONTACT -->
-  <section id="contact">
-    <div class="section-inner">
-      <div class="section-label">05 — Contato</div>
-      <h2 class="section-title">Vamos conversar<span style="color:var(--accent)">.</span></h2>
-      <p class="contact-subtitle">
-        Aberto a oportunidades, projetos colaborativos ou só uma boa troca de ideia sobre tecnologia.
-      </p>
-      <div class="contact-links">
-        <a href="mailto:carloscgmorais@gmail.com" class="contact-link">
-          <i class="fa fa-envelope"></i> carloscgmorais@gmail.com
-        </a>
-        <a href="https://github.com/briellll" target="_blank" class="contact-link">
-          <i class="fab fa-github"></i> GitHub
-        </a>
-        <a href="https://www.linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" class="contact-link">
-          <i class="fab fa-linkedin"></i> LinkedIn
-        </a>
-        <a href="tel:+5593992045909" class="contact-link">
-          <i class="fa fa-phone"></i> (93) 99204-5909
-        </a>
-      </div>
-      <a href="#hero" class="btn btn-outline"><i class="fa fa-arrow-up"></i> Voltar ao topo</a>
-    </div>
-  </section>
+  function cps(escritos) {
+    if (escritos < 70)  return 70;    // abertura: ritmo de quem digita
+    if (escritos < 300) return 240;   // já deu para notar; acelera
+    return 900;                       // saída longa: preenche
+  }
 
-  <footer>
-    <p>Feito com <span>♥</span> por Carlos Gabriel Lobato Morais · <span>2026</span></p>
-  </footer>
+  let fila = [], pular = false, escritosNoLote = 0;
 
-  <script src="main.js"></script>
-</body>
-</html>
+  function criarLinha(html, cls) {
+    const el = document.createElement('div');
+    el.className = 'ln' + (cls ? ' ' + cls : '');
+    el.innerHTML = html;
+    term.appendChild(el);
+    return el;
+  }
+
+  // guarda o texto de cada nó e esvazia, para reescrever letra a letra
+  // mantendo as cores e o markup intactos
+  function prepararItem(el) {
+    const nos = [];
+    const andador = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let n, total = 0;
+    while ((n = andador.nextNode())) {
+      const t = n.nodeValue;
+      if (t.length) { nos.push({ no: n, texto: t }); total += t.length; n.nodeValue = ''; }
+    }
+    return { el, nos, i: 0, j: 0, falta: total };
+  }
+
+  function escrever(item, k) {
+    while (k > 0 && item.i < item.nos.length) {
+      const atual = item.nos[item.i];
+      const n = Math.min(k, atual.texto.length - item.j);
+      item.j += n;
+      atual.no.nodeValue = atual.texto.slice(0, item.j);
+      item.falta -= n;
+      k -= n;
+      if (item.j >= atual.texto.length) { item.i++; item.j = 0; }
+    }
+  }
+
+  function terminarItem(item) {
+    for (const a of item.nos) a.no.nodeValue = a.texto;
+    item.falta = 0;
+  }
+
+  function enfileirar(el) {
+    if (REDUCED.matches) { term.scrollTop = term.scrollHeight; return el; }
+    const item = prepararItem(el);
+    el.classList.add('pend');
+    fila.push(item);
+    revelar();
+    return el;
+  }
+
+  /* Um laço só para a fila inteira. Um laço por linha custaria um quadro por
+     linha, o que trava tudo quando o navegador limita os quadros (aba atrás de
+     outra janela, economia de energia). Aqui cada quadro tem um orçamento de
+     caracteres e o gasta em quantas linhas couberem. */
+  let laco = 0, resto = 0;
+
+  function revelar() {
+    if (laco) return;
+    let antes = performance.now();
+    laco = requestAnimationFrame(function frame(agora) {
+      // teto alto de propósito: com os quadros limitados, a digitação mantém o
+      // ritmo em tempo real, só que escrevendo em blocos maiores
+      const dt = Math.min((agora - antes) / 1000, 1);
+      antes = agora;
+      resto += dt * cps(escritosNoLote);
+      let orcamento = pular ? Infinity : Math.floor(resto);
+      if (orcamento !== Infinity) resto -= orcamento;
+
+      while (fila.length && (orcamento > 0 || fila[0].falta <= 0)) {
+        const item = fila[0];
+        item.el.classList.remove('pend');
+        if (!item.el.isConnected) { fila.shift(); continue; }
+        const k = Math.min(orcamento, item.falta);
+        if (k > 0) { escrever(item, k); escritosNoLote += k; orcamento -= k; }
+        if (item.falta <= 0) fila.shift();
+      }
+      term.scrollTop = term.scrollHeight;
+
+      if (fila.length) laco = requestAnimationFrame(frame);
+      else { laco = 0; resto = 0; pular = false; }
+    });
+  }
+
+  async function drenar() {
+    while (laco || fila.length) await sleep(20);
+  }
+
+  function limparFila() {
+    for (const item of fila) terminarItem(item);
+    fila = []; pular = false; escritosNoLote = 0;
+  }
+
+  const line = (html, cls) => enfileirar(criarLinha(html, cls));
+  const blank = () => line('&nbsp;');
+
+  // títulos passam pela mesma fila; o texto vai como texto puro
+  async function type(text, cls) {
+    const el = document.createElement('div');
+    el.className = 'ln' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+    term.appendChild(el);
+    enfileirar(el);
+    await drenar();
+    return el;
+  }
+
+  function table(rows, cls) {
+    const el = document.createElement('div');
+    el.className = 'tbl' + (cls ? ' ' + cls : '');
+    for (const [k, v] of rows) {
+      const a = document.createElement('span'); a.className = 'hot'; a.textContent = k;
+      const b = document.createElement('span'); b.innerHTML = v;
+      el.append(a, b);
+    }
+    term.appendChild(el);
+    // Trava a primeira coluna na largura final antes de esvaziar o texto; sem
+    // isso a coluna cresce a cada letra e a tabela treme inteira.
+    if (!REDUCED.matches && innerWidth > 760) {
+      let w = 0;
+      el.querySelectorAll('span:nth-child(odd)').forEach(s => { w = Math.max(w, s.offsetWidth); });
+      if (w) el.style.gridTemplateColumns = Math.ceil(w) + 'px minmax(0, 1fr)';
+    }
+    return enfileirar(el);
+  }
+
+  /* ---------------- temas ---------------- */
+
+  const THEMES = {
+    amber: { hot: '#ffb000', cool: '#5fd3bc', warn: '#e0614a', nome: 'âmbar, o padrão' },
+    green: { hot: '#6ef08c', cool: '#8ab4ff', warn: '#ff7b6b', nome: 'verde de terminal antigo' },
+    ice:   { hot: '#86d7ff', cool: '#b79cff', warn: '#ff8aa0', nome: 'azul gelo' },
+    paper: { hot: '#e8dcc0', cool: '#9fb8a8', warn: '#d98b7a', nome: 'osso, o mais sóbrio' }
+  };
+
+  const repaints = [];
+  const token = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+
+  function applyTheme(name) {
+    const t = THEMES[name];
+    if (!t) return false;
+    const r = document.documentElement.style;
+    r.setProperty('--hot', t.hot);
+    r.setProperty('--cool', t.cool);
+    r.setProperty('--warn', t.warn);
+    repaints.forEach(fn => fn());
+    return true;
+  }
+
+  /* ---------------- chuva do matrix ---------------- */
+
+  const rainCv = document.getElementById('rain');
+  const rainCtx = rainCv.getContext('2d');
+  const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF<>/\\$#@%&*';
+  let rainOn = false, rainId = 0, drops = [];
+  const rainStep = 16;
+
+  function rainSize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    rainCv.width = innerWidth * dpr;
+    rainCv.height = innerHeight * dpr;
+    rainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drops = Array.from({ length: Math.ceil(innerWidth / rainStep) }, () => rand(-40, 0));
+  }
+
+  function rainFrame() {
+    rainId = 0;
+    rainCtx.fillStyle = 'rgba(7,8,5,.09)';
+    rainCtx.fillRect(0, 0, innerWidth, innerHeight);
+    rainCtx.font = '600 14px ' + getComputedStyle(document.body).fontFamily;
+    rainCtx.fillStyle = token('--hot');
+    for (let i = 0; i < drops.length; i++) {
+      const ch = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      const y = drops[i] * rainStep;
+      rainCtx.globalAlpha = .85;
+      rainCtx.fillText(ch, i * rainStep, y);
+      if (y > innerHeight && Math.random() > .975) drops[i] = 0;
+      drops[i] += .55;
+    }
+    rainCtx.globalAlpha = 1;
+    if (rainOn && !document.hidden) rainId = requestAnimationFrame(rainFrame);
+  }
+
+  function toggleRain(on) {
+    rainOn = on;
+    rainCv.hidden = !on;
+    if (on) { rainSize(); if (!rainId) rainId = requestAnimationFrame(rainFrame); }
+    else { cancelAnimationFrame(rainId); rainId = 0; rainCtx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+  addEventListener('resize', () => { if (rainOn) rainSize(); });
+
+  /* ---------------- painel: areas de conhecimento ---------------- */
+
+  const SERVICES = [
+    ['3389', 'rdp',   2, 'suporte remoto ao usuário'],
+    ['389',  'ldap',  2, 'Active Directory · contas e permissões'],
+    ['67',   'dhcp',  2, 'IP fixo, escopo, reserva'],
+    ['9100', 'print', 2, 'parque de impressoras'],
+    ['53',   'dns',   1, 'resolução e troubleshooting'],
+    ['445',  'smb',   1, 'compartilhamento e permissão'],
+    ['22',   'ssh',   1, 'acesso a equipamento de rede'],
+    ['1433', 'sql',   1, 'consulta e relatório de ERP'],
+    ['161',  'snmp',  1, 'monitoramento de switch'],
+    ['80',   'http',  1, 'APIs em FastAPI, front em React'],
+    ['8080', 'proxy', 0, 'análise de tráfego web — estudando'],
+    ['514',  'siem',  0, 'log e detecção — estudando']
+  ];
+
+  function scanWidget() {
+    const box = document.createElement('div');
+    box.className = 'widget';
+    const canvas = document.createElement('canvas');
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    cap.innerHTML = '<i class="hot">em profundidade</i><i class="cool">praticado</i><i class="dim">em estudo</i>';
+    box.append(canvas, cap);
+    term.appendChild(box);
+
+    const w = box.clientWidth || 600;
+    const COLS = w < 360 ? 2 : w < 520 ? 3 : w < 760 ? 4 : 6;
+    const ROWS = Math.ceil(SERVICES.length / COLS);
+    const CW = 96, CH = 58, GAP = 6;
+    const W = COLS * CW + (COLS - 1) * GAP;
+    const H = ROWS * CH + (ROWS - 1) * GAP;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.aspectRatio = W + ' / ' + H;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const face = getComputedStyle(document.body).fontFamily;
+    const cells = SERVICES.map((s, i) => ({
+      port: s[0], name: s[1], lvl: s[2],
+      x: (i % COLS) * (CW + GAP),
+      y: Math.floor(i / COLS) * (CH + GAP),
+      lit: 0, at: i * 0.1
+    }));
+
+    function paint() {
+      const INK = { 0: token('--dim'), 1: token('--cool'), 2: token('--hot') };
+      const bg = token('--bg'), edge = token('--line'), fg = token('--fg');
+      ctx.clearRect(0, 0, W, H);
+      for (const c of cells) {
+        const on = c.lit, ink = INK[c.lvl];
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = bg;
+        ctx.fillRect(c.x, c.y, CW, CH);
+        ctx.strokeStyle = on > 0 ? ink : edge;
+        ctx.globalAlpha = on > 0 ? .25 + on * .55 : 1;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(c.x + .5, c.y + .5, CW - 1, CH - 1);
+        ctx.globalAlpha = on * .13;
+        ctx.fillStyle = ink;
+        ctx.fillRect(c.x + 1, c.y + 1, (CW - 2) * on, CH - 2);
+        ctx.globalAlpha = on > 0 ? .35 + on * .65 : .3;
+        ctx.fillStyle = on > 0 ? ink : token('--dim');
+        ctx.font = '600 15px ' + face;
+        ctx.fillText(c.port, c.x + 9, c.y + 25);
+        ctx.globalAlpha = on > 0 ? .5 : .22;
+        ctx.fillStyle = fg;
+        ctx.font = '400 11px ' + face;
+        ctx.fillText(c.name, c.x + 9, c.y + 43);
+      }
+      ctx.globalAlpha = 1;
+    }
+    repaints.push(paint);
+
+    if (REDUCED.matches) { cells.forEach(c => { c.lit = 1; }); paint(); return Promise.resolve(); }
+
+    let t = 0, last = performance.now(), frameId = 0;
+    function frame(now) {
+      frameId = 0;
+      const dt = Math.min((now - last) / 1000, .05);
+      last = now; t += dt;
+      let moving = false;
+      for (const c of cells) {
+        if (t < c.at) { moving = true; continue; }
+        if (c.lit < 1) { c.lit = Math.min(1, c.lit + dt * 3.2); moving = true; }
+      }
+      paint();
+      if (moving && !document.hidden) frameId = requestAnimationFrame(frame);
+    }
+    frameId = requestAnimationFrame(frame);
+    paint();
+    return sleep(cells.length * 100 + 420);
+  }
+
+  /* ================= LAB DE LINUX =================
+     Sala no espírito do OverTheWire Bandit: cada nível esconde uma senha e
+     só sai com o comando certo. O lab é um sub-shell — o prompt muda e os
+     comandos passam a ser ls, cat, file, base64, não os do portfólio. */
+
+  const NIVEIS = [
+    {
+      ensina: 'ls · cat',
+      objetivo: 'A senha deste nível está num arquivo chamado readme, aqui no diretório.',
+      senha: 'ZjLjTmM6FvvyRnrb',
+      fs: { '~': [{ nome: 'readme', tipo: 'texto', txt: 'A senha do próximo nível é ZjLjTmM6FvvyRnrb' }] },
+      dicas: [
+        'Veja o que existe no diretório: ' + '`ls`',
+        'Agora leia o arquivo: ' + '`cat readme`'
+      ]
+    },
+    {
+      ensina: 'caminho relativo',
+      objetivo: 'A senha está num arquivo chamado - (só um traço).',
+      senha: 'Rd1cUkuM5rfkdVkY',
+      fs: { '~': [{ nome: '-', tipo: 'texto', txt: 'A senha do próximo nível é Rd1cUkuM5rfkdVkY' }] },
+      dicas: [
+        'Liste primeiro: ' + '`ls`',
+        'Para o cat, um traço sozinho significa "entrada padrão", não um arquivo.',
+        'Diga que é um caminho: ' + '`cat ./-`'
+      ]
+    },
+    {
+      ensina: 'aspas e espaços',
+      objetivo: 'A senha está num arquivo cujo nome tem espaços.',
+      senha: 'aBZ0W5EmUfAf7kHT',
+      fs: { '~': [{ nome: 'arquivo com espaços', tipo: 'texto', txt: 'A senha do próximo nível é aBZ0W5EmUfAf7kHT' }] },
+      dicas: [
+        'O shell quebra o nome nos espaços e procura três arquivos.',
+        'Junte tudo entre aspas: ' + '`cat "arquivo com espaços"`'
+      ]
+    },
+    {
+      ensina: 'ls -a · arquivo oculto',
+      objetivo: 'A senha está num arquivo escondido dentro do diretório inhere.',
+      senha: 'pIwrPrtPN36QITSp',
+      fs: {
+        '~': [{ nome: 'inhere', dir: true }],
+        '~/inhere': [{ nome: '.senha', tipo: 'texto', oculto: true, txt: 'A senha do próximo nível é pIwrPrtPN36QITSp' }]
+      },
+      dicas: [
+        'Entre no diretório: ' + '`cd inhere`',
+        'O ls comum não mostra arquivo que começa com ponto. Use ' + '`ls -a`',
+        'Leia: ' + '`cat .senha`'
+      ]
+    },
+    {
+      ensina: 'file · tipo de arquivo',
+      objetivo: 'Dentro de inhere há dez arquivos. Só um é texto legível — nos outros o conteúdo é binário.',
+      senha: 'koReBOKuIDDepwhW',
+      fs: {
+        '~': [{ nome: 'inhere', dir: true }],
+        '~/inhere': [
+          { nome: '-arquivo00', tipo: 'bin' }, { nome: '-arquivo01', tipo: 'bin' },
+          { nome: '-arquivo02', tipo: 'bin' }, { nome: '-arquivo03', tipo: 'bin' },
+          { nome: '-arquivo04', tipo: 'bin' }, { nome: '-arquivo05', tipo: 'bin' },
+          { nome: '-arquivo06', tipo: 'bin' },
+          { nome: '-arquivo07', tipo: 'texto', txt: 'A senha do próximo nível é koReBOKuIDDepwhW' },
+          { nome: '-arquivo08', tipo: 'bin' }, { nome: '-arquivo09', tipo: 'bin' }
+        ]
+      },
+      dicas: [
+        'Entre e liste: ' + '`cd inhere`' + ' e ' + '`ls`',
+        'Abrir dez arquivos na mão é desperdício. O file diz o tipo de cada um: ' + '`file ./*`',
+        'O que for ASCII text é o seu. Lembre do traço no nome: ' + '`cat ./-arquivo07`'
+      ]
+    },
+    {
+      ensina: 'base64',
+      objetivo: 'O conteúdo de data.txt está codificado. Decodifique para achar a senha.',
+      senha: 'BbLCvTLcOqOTGOxd',
+      fs: { '~': [{ nome: 'data.txt', tipo: 'texto', txt: 'QSBzZW5oYSBmaW5hbCDDqSBCYkxDdlRMY09xT1RHT3hk' }] },
+      dicas: [
+        'Leia primeiro para ver a cara: ' + '`cat data.txt`',
+        'Terminar em = e só ter letras, números, + e / é assinatura de base64.',
+        'Decodifique: ' + '`base64 -d data.txt`'
+      ]
+    }
+  ];
+
+  let labOn = false, labN = 0, labCwd = '~', labDica = 0;
+
+  const labCaminho = () => labCwd;
+  const labDir = () => NIVEIS[labN].fs[labCwd] || [];
+
+  function setPrompt() {
+    if (labOn) {
+      ps1.textContent = 'lab' + labN + '@linux:' + labCwd + '$';
+      promptRow.classList.add('lab');
+    } else {
+      ps1.textContent = 'gabriel@shell:~$';
+      promptRow.classList.remove('lab');
+    }
+  }
+
+  function labCabecalho() {
+    const nv = NIVEIS[labN];
+    line('<span class="cool b">nível ' + labN + ' de ' + (NIVEIS.length - 1) + '</span>' +
+         '<span class="dim">   exercita: ' + esc(nv.ensina) + '</span>', 'pad');
+    line(esc(nv.objetivo));
+    blank();
+    line('<span class="dim">quando achar, envie com </span>' + kbd('senha <o que você achou>'));
+    line('<span class="dim">travou? </span>' + kbd('dica') + '<span class="dim">   ·   sair do lab: </span>' + kbd('sair'));
+  }
+
+  async function labEntrar() {
+    labOn = true; labN = 0; labCwd = '~'; labDica = 0;
+    setPrompt();
+    await type('lab de linux — 6 níveis', 'hot b pad');
+    blank();
+    line('Cada nível esconde uma senha num arquivo. Você acha usando comando de');
+    line('terminal de verdade, envia a senha e passa para o próximo.');
+    blank();
+    line('<span class="dim">comandos disponíveis aqui: </span>ls<span class="dim">, </span>cat<span class="dim">, </span>cd' +
+         '<span class="dim">, </span>pwd<span class="dim">, </span>file<span class="dim">, </span>base64 -d');
+    labCabecalho();
+  }
+
+  function labSair() {
+    labOn = false;
+    setPrompt();
+    line('<span class="dim">saindo do lab.</span>', 'pad');
+  }
+
+  function labAcha(nome) {
+    const n = String(nome || '').replace(/^\.\//, '');
+    return labDir().find(f => f.nome === n);
+  }
+
+  const LAB_CMDS = {
+
+    ls: (arg) => {
+      const mostrarOcultos = /(^|\s)-\w*a/.test(' ' + arg);
+      const alvo = arg.replace(/(^|\s)-\S+/g, '').trim();
+      let chave = labCwd;
+      if (alvo) {
+        const d = labDir().find(f => f.nome === alvo.replace(/\/$/, '') && f.dir);
+        if (!d) { line('<span class="warn">ls: não encontrei “' + esc(alvo) + '”</span>'); return; }
+        chave = labCwd + '/' + d.nome;
+      }
+      const itens = (NIVEIS[labN].fs[chave] || []).filter(f => mostrarOcultos || !f.oculto);
+      if (!itens.length) { line('<span class="dim">(vazio — e isso costuma ser pista)</span>'); return; }
+      for (const f of itens) {
+        line(f.dir ? '<span class="cool b">' + esc(f.nome) + '/</span>' : esc(f.nome));
+      }
+    },
+
+    cd: (arg) => {
+      const a = String(arg || '').trim().replace(/\/$/, '');
+      if (!a || a === '~') { labCwd = '~'; setPrompt(); return; }
+      if (a === '..') {
+        labCwd = labCwd.includes('/') ? labCwd.slice(0, labCwd.lastIndexOf('/')) : '~';
+        setPrompt(); return;
+      }
+      const d = labDir().find(f => f.nome === a.replace(/^\.\//, '') && f.dir);
+      if (!d) { line('<span class="warn">cd: não existe o diretório “' + esc(a) + '”</span>'); return; }
+      labCwd = labCwd + '/' + d.nome;
+      setPrompt();
+    },
+
+    pwd: () => line('/home/lab' + labN + labCwd.slice(1)),
+
+    cat: (arg) => {
+      let a = String(arg || '').trim();
+      if (!a) { line('<span class="warn">cat: falta dizer qual arquivo.</span>'); return; }
+
+      // traco sozinho: o cat leria da entrada padrao e ficaria travado
+      if (a === '-') {
+        line('<span class="dim">cat: lendo da entrada padrão… nada chega, e ele fica travado aí.</span>');
+        line('<span class="dim">um traço sozinho não é nome de arquivo para o cat. Dê um caminho.</span>');
+        return;
+      }
+
+      // aspas: o shell de verdade junta o que esta entre elas
+      const comAspas = a.match(/^["'](.+)["']$/);
+      if (comAspas) a = comAspas[1];
+      else if (/\s/.test(a)) {
+        const primeiro = a.split(/\s+/)[0];
+        line('<span class="warn">cat: ' + esc(primeiro) + ': arquivo não encontrado</span>');
+        line('<span class="dim">o shell quebrou o nome nos espaços e procurou cada pedaço separado.</span>');
+        return;
+      }
+
+      const f = labAcha(a);
+      if (!f) { line('<span class="warn">cat: ' + esc(a) + ': arquivo não encontrado</span>'); return; }
+      if (f.dir) { line('<span class="warn">cat: ' + esc(a) + ': é um diretório</span>'); return; }
+      if (f.tipo === 'bin') {
+        line('<span class="dim">' + '^@^H' + esc('\u0001\u0002') + '?\u0000\u0000ELF\u0002\u0001\u0001^@^@' + '</span>');
+        line('<span class="dim">(binário — não dá para ler assim. descubra o tipo antes)</span>');
+        return;
+      }
+      line('<span class="cool">' + esc(f.txt) + '</span>');
+    },
+
+    file: (arg) => {
+      const a = String(arg || '').trim();
+      const todos = !a || a === '*' || a === './*';
+      const lista = todos ? labDir().filter(f => !f.oculto) : [labAcha(a)].filter(Boolean);
+      if (!lista.length) { line('<span class="warn">file: não encontrei “' + esc(a) + '”</span>'); return; }
+      for (const f of lista) {
+        const t = f.dir ? 'directory' : f.tipo === 'bin' ? 'data' : 'ASCII text';
+        line('<span class="dim">' + esc(f.nome) + ':</span>  <span class="' +
+             (t === 'ASCII text' ? 'hot' : 'dim') + '">' + t + '</span>');
+      }
+    },
+
+    base64: (arg) => {
+      const partes = String(arg || '').trim().split(/\s+/);
+      const decod = partes.includes('-d') || partes.includes('--decode');
+      const nome = partes.filter(p => !p.startsWith('-'))[0];
+      const f = labAcha(nome);
+      if (!f) { line('<span class="warn">base64: ' + esc(nome || '') + ': arquivo não encontrado</span>'); return; }
+      if (!decod) {
+        line('<span class="dim">isso codificaria o arquivo. Para decodificar, use </span>' + kbd('base64 -d ' + nome));
+        return;
+      }
+      try { line('<span class="cool">' + esc(decodeURIComponent(escape(atob(f.txt)))) + '</span>'); }
+      catch (e) { line('<span class="warn">base64: entrada inválida</span>'); }
+    },
+
+    dica: () => {
+      const d = NIVEIS[labN].dicas;
+      if (labDica >= d.length) { line('<span class="dim">as dicas acabaram — a resposta está no próprio enunciado.</span>'); return; }
+      const texto = d[labDica].replace(/`([^`]+)`/g, (m, c) => kbd(c));
+      line('<span class="cool">dica ' + (labDica + 1) + ':</span> ' + texto);
+      labDica++;
+    },
+
+    senha: async (arg) => {
+      const a = String(arg || '').trim();
+      if (!a) { line('<span class="warn">senha: falta o valor.</span> <span class="dim">use </span>' + kbd('senha <valor>')); return; }
+      if (a !== NIVEIS[labN].senha) {
+        line('<span class="warn">senha incorreta.</span> <span class="dim">confira se copiou inteira, sem espaço sobrando.</span>');
+        return;
+      }
+      line('<span class="hot b">senha correta.</span>', 'pad');
+      labN++;
+      labCwd = '~'; labDica = 0;
+      if (labN >= NIVEIS.length) {
+        labN = NIVEIS.length - 1;   // fica no último para o prompt não quebrar
+        setPrompt();
+        blank();
+        await type('lab concluído — 6 níveis.', 'hot b', 13);
+        blank();
+        line('<span class="cool b">o que você exercitou</span>');
+        blank();
+        table([
+          ['ls · cat',    'listar e ler — o começo de tudo'],
+          ['./arquivo',   'quando o nome confunde o comando, o caminho resolve'],
+          ['aspas',       'o shell quebra nos espaços se você não juntar'],
+          ['ls -a',       'arquivo com ponto na frente não aparece sozinho'],
+          ['file',        'descobrir o tipo antes de abrir'],
+          ['base64 -d',   'reconhecer e desfazer uma codificação']
+        ]);
+        blank();
+        line('<span class="dim">é o mesmo caminho dos primeiros níveis do OverTheWire Bandit.</span>');
+        line('<span class="dim">sair: </span>' + kbd('sair'));
+        return;
+      }
+      setPrompt();
+      blank();
+      labCabecalho();
+    },
+
+    sair: () => labSair(),
+    exit: () => labSair(),
+
+    help: () => {
+      line('<span class="dim">comandos do lab</span>', 'pad');
+      table([
+        ['ls · ls -a',   'lista o diretório; -a mostra os ocultos'],
+        ['cd inhere',    'entra num diretório; cd .. volta'],
+        ['cat arquivo',  'mostra o conteúdo'],
+        ['file ./*',     'diz o tipo de cada arquivo'],
+        ['base64 -d x',  'decodifica base64'],
+        ['pwd',          'mostra onde você está'],
+        ['senha X',      'envia a senha encontrada'],
+        ['dica',         'o próximo empurrão'],
+        ['sair',         'volta para o portfólio']
+      ]);
+    }
+  };
+
+  async function labRun(input) {
+    const parts = input.split(/\s+/);
+    const nome = parts[0].toLowerCase();
+    const resto = input.slice(parts[0].length).trim();
+    const fn = LAB_CMDS[nome];
+    if (!fn) {
+      line('<span class="warn">' + esc(parts[0]) + ': comando não disponível neste lab.</span>');
+      line('<span class="dim">os que funcionam: </span>ls<span class="dim">, </span>cat<span class="dim">, </span>cd' +
+           '<span class="dim">, </span>pwd<span class="dim">, </span>file<span class="dim">, </span>base64 -d' +
+           '<span class="dim">, </span>senha<span class="dim">, </span>dica<span class="dim">, </span>sair');
+      return;
+    }
+    await fn(resto);
+  }
+
+  /* ---------------- conteudo ---------------- */
+
+  const BANNER = String.raw`
+ ____   _   _  _____  _      _
+/ ___| | | | || ____|| |    | |
+\___ \ | |_| ||  _|  | |    | |
+ ___) ||  _  || |___ | |___ | |___
+|____/ |_| |_||_____||_____||_____|`;
+
+  const LOGO = String.raw`
+      .------.
+     / .--.  \
+    | |    |  |
+    | |  .-'  |
+     \ '-'   /
+      '-----'
+     [ sec ]`;
+
+  const PROJECTS = [
+    { id: 1, nome: 'GLPI SQL AI', tags: 'Python · LangGraph · LangChain · ChromaDB · MySQL',
+      txt: 'Assistente de terminal que responde perguntas em linguagem natural sobre a base do GLPI. Classifica a intenção da pergunta, gera a query SQL, executa e retorna a resposta em português. A arquitetura é multi-agente em LangGraph: um supervisor roteia entre um worker de consulta SQL e um worker de sugestão de solução, este com busca vetorial sobre a base de conhecimento do GLPI indexada em ChromaDB. Um nó de validação de escopo barra perguntas fora do domínio de helpdesk, e o worker de SQL reexecuta a query corrigida quando a execução falha.' },
+
+    { id: 2, nome: 'Implantação e gestão de sistemas', tags: 'ERP · GLPI · parametrização · homologação',
+      txt: 'Implantação de sistemas internos de ponta a ponta: levantamento do processo com a área usuária, parametrização de cadastros e regras de negócio, homologação com teste funcional, treinamento dos usuários e suporte à operação. Inclui a documentação dos processos de negócio e a manutenção da documentação técnica.' },
+
+    { id: 3, nome: 'Automação de processos em Python', tags: 'Python · ERP · rotinas operacionais',
+      txt: 'Scripts para automatizar rotinas de TI e do ERP: conferência de cadastro, extração de dados e geração de relatório, reduzindo a intervenção manual nas operações recorrentes.' },
+
+    { id: 4, nome: 'Infraestrutura de rede', tags: 'TCP/IP · switch · VLAN · Active Directory',
+      txt: 'Configuração e monitoramento da rede: roteador, switch, VLAN, escopo DHCP, IP fixo e cabeamento estruturado. Administração do Active Directory para contas e permissões, e gestão do parque de computadores e impressoras, com manutenção preventiva e corretiva.' },
+
+    { id: 5, nome: 'APIs em FastAPI com modelos de IA', tags: 'Python · FastAPI · Hugging Face · Gemini',
+      txt: 'Conjunto de APIs integradas a modelos de linguagem: SecurePassGen (geração de senhas), Summafy (sumarização com Hugging Face), Prosa.IA (assistente conversacional via WebSocket com Gemini), DataMorph (conversão de arquivos) e VibeCheck (análise de sentimento).',
+      link: '<a href="https://github.com/briellll" target="_blank" rel="noopener">github.com/briellll</a>' },
+
+    { id: 6, nome: 'Portfólio de desenvolvimento', tags: 'HTML · CSS · JavaScript · React',
+      txt: 'Site reunindo meus projetos pessoais como desenvolvedor.',
+      link: '<a href="https://briellll.github.io/portfolio/" target="_blank" rel="noopener">briellll.github.io/portfolio</a>' }
+  ];
+
+  const HOPS = [
+    ['ifpa.tecnico',     '2015', '1.021 ms', 'Técnico em Informática · IFPA'],
+    ['unimed.prestador', '2019', '3.470 ms', 'Analista de Relacionamento com Prestador Jr · atendimento, ERP e parametrização'],
+    ['ufopa.si',         '2022', '6.118 ms', 'Sistemas de Informação · UFOPA, cursando'],
+    ['unimed.redes',     '2023', '9.204 ms', 'Analista de Redes Jr · infraestrutura, Active Directory e implantação de sistemas'],
+    ['gabriel.shell',    'hoje', '*',        'estudando segurança da informação']
+  ];
+
+  const FILES = {
+    'readme.md': [
+      ['h', 'sobre este terminal'],
+      ['p', 'Portfólio em forma de shell: cada comando mostra uma parte das informações.'],
+      ['p', 'É um arquivo HTML sem framework e sem dependência além da fonte. Os gráficos são desenhados em canvas, não são imagens.'],
+      ['k', 'dica', 'digite guia se nunca mexeu num terminal.']
+    ],
+    'experiencia/unimed-redes.md': [
+      ['h', 'Analista de Redes Jr'],
+      ['k', 'empresa', 'Unimed Oeste do Pará'],
+      ['k', 'período', '10/2023 — presente'],
+      ['k', 'local',   'Santarém — PA'],
+      ['s', 'atividades'],
+      ['li', 'Implantação e gestão de sistemas internos e ERP, incluindo parametrização e suporte operacional.'],
+      ['li', 'Configuração e monitoramento de redes TCP/IP, roteadores e switches.'],
+      ['li', 'Administração de Active Directory: contas, grupos e permissões.'],
+      ['li', 'Suporte de TI aos usuários em hardware e software, incluindo impressoras.'],
+      ['li', 'Desenvolvimento de scripts em Python para automação de processos.'],
+      ['li', 'Manutenção preventiva e corretiva do parque de equipamentos.'],
+      ['li', 'Elaboração e manutenção de documentação técnica.'],
+      ['s', 'tecnologias'],
+      ['p', 'TCP/IP · DHCP · VLAN · Active Directory · GLPI · ERP · Python · SQL']
+    ],
+    'experiencia/unimed-prestador.md': [
+      ['h', 'Analista de Relacionamento com Prestador Jr'],
+      ['k', 'empresa', 'Unimed Oeste do Pará'],
+      ['k', 'período', '06/2019 — 10/2023'],
+      ['k', 'local',   'Santarém — PA'],
+      ['s', 'atividades'],
+      ['li', 'Parametrização de serviços e cadastros em sistema ERP.'],
+      ['li', 'Apoio na implementação e melhoria de processos sistêmicos, com resolução de inconsistências.'],
+      ['li', 'Treinamento e suporte aos prestadores no uso dos sistemas internos e do ERP.'],
+      ['li', 'Negociação de valores com prestadores para prestação de atendimento.'],
+      ['li', 'Elaboração de relatórios.'],
+      ['s', 'tecnologias'],
+      ['p', 'ERP · SQL · documentação de processos de negócio']
+    ],
+    'formacao/ufopa.md': [
+      ['h', 'Sistemas de Informação'],
+      ['k', 'instituição', 'Universidade Federal do Oeste do Pará — UFOPA'],
+      ['k', 'período',     '01/2022 — em andamento'],
+      ['k', 'local',       'Santarém — PA']
+    ],
+    'formacao/ifpa.md': [
+      ['h', 'Técnico em Informática'],
+      ['k', 'instituição', 'Instituto Federal do Pará — IFPA'],
+      ['k', 'período',     '01/2015 — 01/2017'],
+      ['s', 'conteúdo'],
+      ['p', 'Manutenção de computadores, redes de dados e lógica de programação.']
+    ],
+    'estudos/seguranca.md': [
+      ['h', 'segurança da informação'],
+      ['s', 'em estudo'],
+      ['li', 'Linux — linha de comando, permissões e hardening'],
+      ['li', 'Análise de tráfego de rede'],
+      ['li', 'Segurança de identidade e Active Directory'],
+      ['s', 'curso'],
+      ['p', 'Cyber Academy 2026 — Laboratório de Segurança Cibernética da FEBRABAN, em parceria com a GoHacking.'],
+      ['s', 'prática'],
+      ['p', 'O comando lab traz seis níveis de linha de comando Linux.']
+    ]
+  };
+
+  const MAN = {
+    lab:         ['lab', 'Abre um laboratório de linha de comando Linux com seis níveis, no estilo do OverTheWire Bandit. Dentro dele os comandos são ls, cat, cd, file e base64.'],
+    experiencia: ['experiencia', 'Imprime os dois cargos com empresa, período, atividades e tecnologias.'],
+    certs:       ['certs', 'Formação acadêmica, cursos e idiomas. Também responde por formacao.'],
+    stack:       ['stack', 'Ferramentas e tecnologias por categoria. Também responde por ferramentas.'],
+    scan:       ['scan', 'Mostra as áreas de conhecimento numa grade, com a profundidade de cada uma.'],
+    traceroute: ['traceroute', 'Mostra a trajetória profissional em ordem cronológica.'],
+    cat:        ['cat readme.md', 'Imprime um arquivo. Digite ls antes para ver quais existem.'],
+    ls:         ['ls · ls experiencia', 'Lista os arquivos. Sem argumento mostra as pastas.'],
+    theme:      ['theme green', 'Troca a cor do terminal: amber, green, ice ou paper.'],
+    matrix:     ['matrix · matrix off', 'Liga ou desliga a chuva de caracteres no fundo.'],
+    neofetch:   ['neofetch', 'Resumo das informações principais, com o logo ao lado.'],
+    show:       ['show 1', 'Abre um projeto pelo número que aparece em projects.'],
+    guia:       ['guia', 'Explica como usar esta página para quem nunca mexeu num terminal.'],
+    help:       ['help', 'Lista os comandos disponíveis, agrupados por assunto.']
+  };
+
+  // h = título · s = subtítulo · k = campo e valor · li = item de lista · p = parágrafo
+  function renderDoc(doc) {
+    for (const node of doc) {
+      if (node[0] === 'h') { line('<span class="hot b">' + esc(node[1]) + '</span>', 'pad'); blank(); }
+      else if (node[0] === 's') { line('<span class="dim">' + esc(node[1]) + '</span>', 'pad'); }
+      else if (node[0] === 'k') { table([[node[1], esc(node[2])]]); }
+      else if (node[0] === 'li') { line('<span class="dim">·</span>  ' + esc(node[1]), 'li'); }
+      else if (node[0] === 'p') { line(esc(node[1])); blank(); }
+    }
+  }
+
+  /* ---------------- comandos ---------------- */
+
+  const COMMANDS = {
+
+    help: async () => {
+      line('<span class="dim">currículo</span>', 'pad');
+      table([
+        ['whoami',      'quem sou e no que trabalho'],
+        ['experiencia', 'os cargos, com período e atividades'],
+        ['certs',       'formação, cursos e idiomas'],
+        ['stack',       'ferramentas e tecnologias'],
+        ['traceroute',  'a trajetória em ordem cronológica'],
+        ['scan',        'as áreas que eu cubro, numa grade'],
+        ['neofetch',    'o resumo, com logo']
+      ]);
+      line('<span class="dim">projetos e arquivos</span>', 'pad');
+      table([
+        ['projects',      'lista os projetos'],
+        ['show 1',        'abre o projeto número 1 (vale até ' + PROJECTS.length + ')'],
+        ['ls',            'lista os arquivos de experiência e formação'],
+        ['cat readme.md', 'lê um arquivo da lista']
+      ]);
+      line('<span class="dim">laboratório</span>', 'pad');
+      table([['lab', 'seis níveis de linha de comando Linux']]);
+      line('<span class="dim">shell</span>', 'pad');
+      table([
+        ['guia',        'como usar esta página, para quem nunca viu um terminal'],
+        ['man lab',     'manual de um comando'],
+        ['theme green', 'troca a cor: amber, green, ice ou paper'],
+        ['matrix',      'chuva de caracteres no fundo'],
+        ['contact',     'como falar comigo'],
+        ['history',     'comandos desta sessão'],
+        ['clear',       'limpa a tela']
+      ]);
+    },
+
+    whoami: async () => {
+      await type('Gabriel Morais — Analista de Redes Jr.', 'hot pad');
+      blank();
+      // parágrafos inteiros: quebrar na mão briga com a quebra automática
+      line('Trabalho na Unimed Oeste do Pará, em Santarém. Cuido da implantação e da gestão dos sistemas internos — ERP e GLPI — passando por levantamento de processo, parametrização, homologação e suporte à operação.');
+      blank();
+      line('Também respondo pela infraestrutura de rede: TCP/IP, switch, VLAN, DHCP e Active Directory, além do parque de computadores e impressoras. Automatizo rotinas em Python.');
+      blank();
+      line('Curso Sistemas de Informação na UFOPA e direciono os estudos para segurança da informação: Linux, análise de tráfego, hardening e segurança de identidade.');
+      blank();
+      line('<span class="dim">veja </span>' + kbd('projects') + '<span class="dim"> ou </span>' +
+           kbd('traceroute') + '<span class="dim"> para a trajetória.</span>');
+    },
+
+    neofetch: async () => {
+      const wrap = document.createElement('div');
+      wrap.className = 'fetch';
+      const pre = document.createElement('pre');
+      pre.textContent = LOGO;
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const t = document.createElement('div');
+      t.className = 'tbl';
+      const rows = [
+        ['nome',     'Carlos Gabriel Lobato Morais'],
+        ['função',   'Analista de Redes Jr · Unimed Oeste do Pará'],
+        ['atua em',  'implantação e gestão de sistemas · infraestrutura'],
+        ['local',    'Santarém — Pará'],
+        ['formação', 'Sistemas de Informação · UFOPA'],
+        ['estudos',  'segurança da informação'],
+        ['uptime',   '<span data-up>—</span>']
+      ];
+      for (const [k, v] of rows) {
+        const a = document.createElement('span'); a.className = 'hot'; a.textContent = k;
+        const b = document.createElement('span'); b.innerHTML = v;
+        t.append(a, b);
+      }
+      meta.appendChild(t);
+      wrap.append(pre, meta);
+      term.appendChild(wrap);
+      const up = wrap.querySelector('[data-up]');
+      if (up) up.textContent = upStr();
+      enfileirar(wrap);
+    },
+
+    // imprime os dois cargos de uma vez, em vez de obrigar a passar por ls e cat
+    experiencia: async () => {
+      renderDoc(FILES['experiencia/unimed-redes.md']);
+      blank();
+      renderDoc(FILES['experiencia/unimed-prestador.md']);
+      line('<span class="dim">os mesmos arquivos estão em </span>' + kbd('ls experiencia'), 'pad');
+    },
+
+    formacao:    async () => { await COMMANDS.certs(); },
+    ferramentas: async () => { await COMMANDS.stack(); },
+
+    lab: async () => { await labEntrar(); },
+
+    scan: async () => {
+      await type('$ nmap -sV -T4 gabriel.shell', 'dim pad', 6);
+      line('<span class="dim">varrendo as áreas cobertas…</span>');
+      await scanWidget();
+      blank();
+      table(SERVICES.map(s => [s[0] + '/' + s[1], esc(s[3])]));
+      const forte = SERVICES.filter(s => s[2] === 2).length;
+      const prat  = SERVICES.filter(s => s[2] === 1).length;
+      blank();
+      line('<span class="hot">' + forte + '</span> em profundidade · ' +
+           '<span class="cool">' + prat + '</span> praticadas · ' +
+           '<span class="dim">' + (SERVICES.length - forte - prat) + ' em estudo</span>');
+    },
+
+    traceroute: async () => {
+      await type('traceroute to carreira.gabriel, ' + HOPS.length + ' saltos', 'dim pad', 6);
+      blank();
+      for (let i = 0; i < HOPS.length; i++) {
+        const [nome, ano, ms, txt] = HOPS[i];
+        const n = String(i + 1).padStart(2, ' ');
+        const aqui = i === HOPS.length - 1;
+        line('<span class="dim">' + n + '</span>  <span class="' + (aqui ? 'hot b' : 'hot') + '">' +
+             esc(nome.padEnd(18, ' ')) + '</span><span class="cool">' + esc(ano) + '</span>' +
+             '<span class="dim">   ' + esc(ms.padStart(9, ' ')) + '</span>');
+        line('    <span class="dim">' + esc(txt) + '</span>');
+      }
+    },
+
+    projects: async () => {
+      line('<span class="dim">' + PROJECTS.length + ' projetos</span>', 'pad');
+      blank();
+      for (const p of PROJECTS) {
+        line('<span class="hot b">[' + p.id + ']</span> <span class="b">' + esc(p.nome) + '</span>');
+        line('    <span class="dim">' + esc(p.tags) + '</span>');
+      }
+      blank();
+      line('<span class="dim">para abrir um, digite </span>' + kbd('show 1') +
+           '<span class="dim"> — vale de 1 a ' + PROJECTS.length + '.</span>');
+    },
+
+    show: async (arg) => {
+      const q = String(arg || '').trim();
+      const p = PROJECTS.find(x => String(x.id) === q);
+      if (!p) {
+        line('<span class="warn">não existe projeto “' + esc(q || '') + '”.</span>', 'pad');
+        line('<span class="dim">os projetos vão de 1 a ' + PROJECTS.length + '. Tente </span>' + kbd('show 1') +
+             '<span class="dim">, ou </span>' + kbd('projects') + '<span class="dim"> para ver a lista.</span>');
+        return;
+      }
+      await type('[' + p.id + '] ' + p.nome, 'hot b pad');
+      line('<span class="dim">' + esc(p.tags) + '</span>');
+      blank();
+      line(esc(p.txt));
+      if (p.link) { blank(); table([['link', p.link]]); }
+    },
+
+    ls: async (arg) => {
+      const dir = String(arg || '').trim().replace(/^\.\//, '').replace(/\/$/, '');
+      const paths = Object.keys(FILES);
+      if (!dir) {
+        const dirs = [...new Set(paths.filter(p => p.includes('/')).map(p => p.split('/')[0]))];
+        line('', 'pad');
+        dirs.forEach(d => line('<span class="cool b">' + esc(d) + '/</span><span class="dim">   ' +
+          paths.filter(p => p.startsWith(d + '/')).length + ' arquivos</span>'));
+        paths.filter(p => !p.includes('/')).forEach(f => line(esc(f)));
+        blank();
+        line('<span class="dim">para abrir uma pasta, digite </span>' + kbd('ls experiencia') +
+             '<span class="dim">; para ler um arquivo, </span>' + kbd('cat readme.md'));
+        return;
+      }
+      const inside = paths.filter(p => p.startsWith(dir + '/'));
+      if (!inside.length) {
+        line('<span class="warn">não existe a pasta “' + esc(dir) + '”.</span>', 'pad');
+        line('<span class="dim">digite </span>' + kbd('ls') + '<span class="dim"> sozinho para ver quais existem.</span>');
+        return;
+      }
+      line('<span class="dim">' + esc(dir) + '/</span>', 'pad');
+      inside.forEach(p => line(esc(p.split('/').slice(1).join('/'))));
+      blank();
+      line('<span class="dim">para ler, digite </span>' + kbd('cat ' + inside[0]));
+    },
+
+    cat: async (arg) => {
+      const want = String(arg || '').trim().replace(/^\.\//, '');
+      if (!want) {
+        line('<span class="warn">falta dizer qual arquivo.</span>', 'pad');
+        line('<span class="dim">exemplo: </span>' + kbd('cat readme.md') +
+             '<span class="dim">. Digite </span>' + kbd('ls') + '<span class="dim"> para ver a lista.</span>');
+        return;
+      }
+      const key = Object.keys(FILES).find(p => p === want || p.endsWith('/' + want));
+      if (!key) {
+        line('<span class="warn">não encontrei o arquivo “' + esc(want) + '”.</span>', 'pad');
+        const perto = Object.keys(FILES).find(p => p.includes(want.split('.')[0]));
+        line('<span class="dim">tente </span>' + kbd('cat ' + (perto || 'readme.md')) +
+             '<span class="dim">, ou </span>' + kbd('ls') + '<span class="dim"> para ver todos.</span>');
+        return;
+      }
+      renderDoc(FILES[key]);
+    },
+
+    man: async (arg) => {
+      const k = String(arg || '').trim().toLowerCase();
+      if (!k) { line('<span class="dim">o man explica um comando. Exemplo: </span>' + kbd('man lab'), 'pad'); return; }
+      const m = MAN[k];
+      if (!m) {
+        line('<span class="warn">não tenho manual para “' + esc(k) + '”.</span>', 'pad');
+        line('<span class="dim">tem manual para: </span>' + Object.keys(MAN).join('<span class="dim">, </span>'));
+        return;
+      }
+      line('<span class="dim">NOME</span>', 'pad');
+      line('    <span class="hot b">' + esc(k) + '</span>');
+      line('<span class="dim">COMO USAR</span>', 'pad');
+      line('    ' + esc(m[0]));
+      line('<span class="dim">O QUE FAZ</span>', 'pad');
+      line('    ' + esc(m[1]));
+    },
+
+    theme: async (arg) => {
+      const k = String(arg || '').trim().toLowerCase();
+      const nomes = Object.keys(THEMES);
+      if (!k) {
+        line('<span class="dim">as cores disponíveis:</span>', 'pad');
+        table(nomes.map(n => [n, '<span class="dim">' + THEMES[n].nome + '</span>  ' + kbd('theme ' + n)]));
+        return;
+      }
+      if (!applyTheme(k)) {
+        const sugestao = near(k, nomes) || 'amber';
+        line('<span class="warn">“' + esc(k) + '” não é uma das cores.</span>', 'pad');
+        line('<span class="dim">tente </span>' + kbd('theme ' + sugestao) + '<span class="dim"> — ou uma destas:</span>');
+        table(nomes.map(n => [n, '<span class="dim">' + THEMES[n].nome + '</span>  ' + kbd('theme ' + n)]));
+        return;
+      }
+      line('<span class="hot">cor trocada para ' + esc(k) + '</span> <span class="dim">— ' +
+           THEMES[k].nome + '. Para voltar ao normal: </span>' + kbd('theme amber'), 'pad');
+    },
+
+    matrix: async (arg) => {
+      const k = String(arg || '').trim().toLowerCase();
+      const quer = k === 'off' ? false : k === 'on' ? true : !rainOn;
+      if (quer && REDUCED.matches) {
+        line('<span class="dim">seu sistema está com movimento reduzido ligado — a chuva fica desligada.</span>', 'pad');
+        return;
+      }
+      toggleRain(quer);
+      line(quer ? '<span class="hot">chuva ligada.</span> <span class="dim">para desligar: </span>' + kbd('matrix off')
+                : '<span class="dim">chuva desligada. Para ligar de novo: </span>' + kbd('matrix on'), 'pad');
+    },
+
+    guia: async () => {
+      await type('como usar esta página', 'hot b pad');
+      blank();
+      line('Ela funciona como o terminal de um computador: você escreve o nome de um assunto e ele responde. Não precisa saber nada de antemão.');
+      blank();
+      table([
+        ['1', 'Clique num dos botões no rodapé — é o caminho mais curto.'],
+        ['2', 'Ou clique nesta linha de baixo, digite a palavra e aperte Enter.'],
+        ['3', 'Errou? eu digo qual era o comando certo. Nada quebra.']
+      ]);
+      blank();
+      line('<span class="dim">resumo direto: </span>' + kbd('whoami') + '<span class="dim"> para quem eu sou, </span>' +
+           kbd('contact') + '<span class="dim"> para falar comigo.</span>');
+    },
+
+    certs: async () => {
+      line('<span class="dim">formação</span>', 'pad');
+      table([
+        ['UFOPA', 'Sistemas de Informação <span class="dim">· 2022 — cursando</span>'],
+        ['IFPA',  'Técnico em Informática <span class="dim">· 2015 — 2017</span>']
+      ]);
+      line('<span class="dim">cursos</span>', 'pad');
+      table([
+        ['Redes de Computadores', 'Curso em Vídeo'],
+        ['JavaScript',            'Curso em Vídeo'],
+        ['Git e GitHub',          'Curso em Vídeo'],
+        ['Imersão IA',            'Alura'],
+        ['Cyber Academy 2026',    'FEBRABAN · GoHacking']
+      ]);
+      line('<span class="dim">idiomas</span>', 'pad');
+      table([['português', 'nativo'], ['inglês', 'básico']]);
+    },
+
+    stack: async () => {
+      line('<span class="dim">ferramentas e tecnologias</span>', 'pad');
+      table([
+        ['sistemas',  'ERP · GLPI · parametrização · homologação · implantação'],
+        ['redes',     'TCP/IP · DHCP · VLAN · cabeamento · switch · roteador'],
+        ['windows',   'Active Directory · SMB · RDP · parque de estações'],
+        ['suporte',   'Service Desk · SLA · documentação técnica · hardware'],
+        ['código',    'Python · FastAPI · LangChain · LangGraph · JavaScript · React · SQL'],
+        ['estudando', 'Linux · análise de tráfego · hardening · segurança de identidade']
+      ]);
+    },
+
+    contact: async () => {
+      line('<span class="dim">canais</span>', 'pad');
+      table([
+        ['email',    '<span class="cool">carloscgmorais@gmail.com</span>'],
+        ['linkedin', '<a href="https://linkedin.com/in/carlos-gabriel-78b23a155/" target="_blank" rel="noopener">/in/carlos-gabriel-78b23a155</a>'],
+        ['github',   '<a href="https://github.com/briellll" target="_blank" rel="noopener">@briellll</a>'],
+        ['local',    'Santarém — Pará']
+      ]);
+    },
+
+    history: async () => {
+      if (!history.length) { line('<span class="dim">nenhum comando ainda.</span>', 'pad'); return; }
+      line('', 'pad');
+      history.forEach((h, i) => line('<span class="dim">' + String(i + 1).padStart(3, ' ') + '</span>  ' + esc(h)));
+    },
+
+    uptime: async () => {
+      line('<span class="dim">esta aba está aberta há </span><span class="hot">' + upStr() + '</span>', 'pad');
+    },
+
+    clear: async () => { limparFila(); term.innerHTML = ''; },
+
+    sudo: async () => {
+      await type('gabriel não está no arquivo sudoers. Este incidente será reportado.', 'warn pad', 14);
+    },
+
+    exit: async () => {
+      await type('não dá pra sair. você mora aqui agora.', 'dim pad', 16);
+    }
+  };
+
+  const NAMES = Object.keys(COMMANDS);
+
+  /* ---------------- utilitarios ---------------- */
+
+  function upStr() {
+    const s = Math.floor((Date.now() - bootedAt) / 1000);
+    if (s < 60) return s + 's';
+    const m = Math.floor(s / 60);
+    return m < 60 ? m + 'm ' + (s % 60) + 's' : Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  }
+
+  function near(a, list) {
+    let best = null, bestD = 3;
+    for (const b of list) { const d = dist(a, b); if (d < bestD) { bestD = d; best = b; } }
+    return best;
+  }
+  function dist(a, b) {
+    const m = a.length, n = b.length;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+      const row = [i];
+      for (let j = 1; j <= n; j++) {
+        row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = row;
+    }
+    return prev[n];
+  }
+
+  async function autoType(text) {
+    for (const ch of text) {
+      if (!tourOn) { cmd.value = ''; render(); return false; }
+      cmd.value += ch;
+      caretFim(); render();
+      if (!REDUCED.matches) await sleep(rand(45, 115));
+    }
+    if (!REDUCED.matches) await sleep(280);
+    return tourOn;
+  }
+
+  function orientar() {
+    blank();
+    line('<span class="cool b">O que você quer ver?</span>');
+    line('<span class="dim">Clique num botão aqui embaixo — ou digite o comando e aperte Enter.</span>');
+    line('<span class="dim">Nunca mexeu num terminal? digite </span>' + kbd('guia') + '<span class="dim"> que eu explico.</span>');
+  }
+
+  function nudge() {
+    if (nudged || userActed || busy) return;
+    nudged = true;
+    line('<span class="dim">— sem pressa. os botões aqui embaixo abrem tudo, sem precisar digitar nada.</span>', 'pad');
+  }
+
+  function tick() {
+    if (document.hidden) return;
+    const d = new Date();
+    clock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    document.querySelectorAll('[data-up]').forEach(el => { el.textContent = upStr(); });
+  }
+
+  /* ---------------- prompt: cursor que acompanha o acento ---------------- */
+
+  function caretFim() {
+    const n = cmd.value.length;
+    try { cmd.setSelectionRange(n, n); } catch (e) { /* input nao focado */ }
+  }
+
+  function render() {
+    const v = cmd.value;
+    let p = cmd.selectionStart;
+    if (p == null || p > v.length) p = v.length;
+    echoA.textContent = v.slice(0, p);
+    echoB.textContent = v.slice(p);
+    cur.classList.toggle('blink', !busy);
+  }
+
+  ['input', 'keyup', 'click', 'select', 'focus'].forEach(ev => cmd.addEventListener(ev, render));
+  document.addEventListener('selectionchange', () => { if (document.activeElement === cmd) render(); });
+
+  /* ---------------- loop de entrada ---------------- */
+
+  async function run(raw) {
+    const input = raw.trim();
+    // a tecla que enviou o comando não pode pular a saída dele
+    escritosNoLote = 0;
+    pular = false;
+    line('<span class="' + (labOn ? 'cool' : 'hot') + '">' + esc(ps1.textContent) + '</span> ' + esc(input), 'pad');
+    if (!input) return;
+
+    history.push(input);
+    histAt = history.length;
+
+    if (labOn) { await labRun(input); return; }
+
+    const parts = input.split(/\s+/);
+    const name = parts[0].toLowerCase();
+    const fn = COMMANDS[name];
+    if (!fn) {
+      line('<span class="warn">“' + esc(parts[0]) + '” não é um comando daqui.</span>');
+      const guess = near(name, NAMES);
+      if (guess) line('<span class="dim">você quis dizer </span>' + kbd(guess) + '<span class="dim">?</span>');
+      else line('<span class="dim">digite </span>' + kbd('help') + '<span class="dim"> para ver tudo, ou </span>' +
+                kbd('guia') + '<span class="dim"> se nunca usou um terminal.</span>');
+      return;
+    }
+    await fn(parts.slice(1).join(' '));
+  }
+
+  cmd.addEventListener('keydown', async (e) => {
+    if (tourOn) tourOn = false;
+    userActed = true;
+    pular = true;              // qualquer tecla despeja o resto da saída
+    clearTimeout(idleTimer);
+
+    if (e.key === 'l' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); limparFila(); term.innerHTML = ''; return; }
+    if (busy) { e.preventDefault(); return; }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = cmd.value;
+      cmd.value = '';
+      render();
+      busy = true;
+      stat.textContent = 'executando';
+      stat.className = 'pill run';
+      try { await run(v); await drenar(); }
+      catch (err) { line('<span class="warn">erro interno: ' + esc(err && err.message) + '</span>'); }
+      finally {
+        busy = false;
+        stat.textContent = 'pronto';
+        stat.className = 'pill ok';
+        render();
+        cmd.focus();
+      }
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const v = cmd.value.trim().toLowerCase();
+      if (!v) return;
+      const lista = labOn ? Object.keys(LAB_CMDS) : NAMES;
+      const hit = lista.filter(n => n.startsWith(v));
+      if (hit.length === 1) { cmd.value = hit[0] + ' '; caretFim(); render(); }
+      else if (hit.length > 1) line('<span class="dim">' + hit.join('   ') + '</span>', 'pad');
+      return;
+    }
+
+    // Só as setas verticais são capturadas; esquerda, direita, Home e End
+    // seguem o comportamento nativo e o cursor desenhado acompanha.
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histAt > 0) { histAt--; cmd.value = history[histAt]; caretFim(); render(); }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histAt < history.length - 1) { histAt++; cmd.value = history[histAt]; }
+      else { histAt = history.length; cmd.value = ''; }
+      caretFim();
+      render();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    pular = true;              // um clique também despeja o resto
+    if (e.target.closest('button')) return;
+    const sel = getSelection();
+    if (sel && String(sel).length) return;
+    cmd.focus();
+  });
+
+  let pending = null;
+
+  function runOrQueue(name) {
+    userActed = true;
+    pular = true;
+    clearTimeout(idleTimer);
+    if (tourOn) { tourOn = false; pending = name; return; }
+    if (busy) return;
+    cmd.value = name;
+    caretFim(); render();
+    cmd.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  }
+
+  document.querySelectorAll('.hint button').forEach(b => {
+    b.addEventListener('click', () => runOrQueue(b.dataset.run));
+  });
+
+  /* ---------------- boot ---------------- */
+
+  (async function boot() {
+    busy = true;
+    tick();
+    setInterval(tick, 1000);
+
+    const b = document.createElement('div');
+    b.className = 'banner';
+    b.textContent = BANNER;
+    term.appendChild(b);
+
+    line('<span class="dim">Carlos Gabriel Lobato Morais · Analista de Redes Jr · Santarém — PA</span>', 'pad');
+    blank();
+
+    const POST = [
+      ['memória',           'ok'],
+      ['rede tcp/ip',       'ok'],
+      ['active directory',  'ok'],
+      ['/experiencia',      'montado'],
+      ['/formacao',         'montado'],
+      ['/estudos',          'montado']
+    ];
+    for (const [msg, res] of POST) {
+      const dots = '.'.repeat(Math.max(2, 22 - msg.length));
+      const el = line('<span class="dim">' + msg + ' ' + dots + '</span>');
+      await drenar();                      // espera a linha ser escrita antes de completar
+      if (!REDUCED.matches) await sleep(40);
+      el.innerHTML = '<span class="dim">' + msg + ' ' + dots + ' </span><span class="cool">' + res + '</span>';
+      term.scrollTop = term.scrollHeight;
+    }
+
+    blank();
+    await type('Pronto. Vou me apresentar sozinho — pode me interromper quando quiser.', 'hot', 11);
+    if (!REDUCED.matches) await sleep(520);
+
+    tourOn = true;
+    const seguiu = await autoType('whoami');
+    tourOn = false;
+    if (seguiu) { cmd.value = ''; render(); await run('whoami'); }
+    orientar();
+
+    busy = false;
+    render();
+    cmd.focus();
+
+    if (pending) { const p = pending; pending = null; runOrQueue(p); }
+    else idleTimer = setTimeout(nudge, 22000);
+  })();
+})();
+</script>
